@@ -13,6 +13,11 @@ import { Avatar } from "./avatar";
 export function isNavActive(pathname: string | null, href?: string): boolean {
   if (!href || !pathname) return false;
   if (pathname === href) return true;
+  // Single-segment hrefs like /student or /teacher are role roots — they should
+  // only light up when the user is exactly there, otherwise every subroute
+  // would also highlight the dashboard.
+  const segments = href.split("/").filter(Boolean);
+  if (segments.length <= 1) return false;
   return pathname.startsWith(href + "/");
 }
 

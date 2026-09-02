@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Bookmark, Star } from "lucide-react";
 import { Avatar } from "./avatar";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export type CourseCardProps = {
   price: number;
   nextSlot: string;
   tone: CourseCardTone;
+  href?: string;
 };
 
 export function CourseCard({
@@ -26,10 +28,21 @@ export function CourseCard({
   sessionsGiven,
   price,
   nextSlot,
+  href,
 }: CourseCardProps) {
   const [saved, setSaved] = useState(false);
+  const Wrapper: React.ElementType = href ? Link : "article";
+  const wrapperProps = href
+    ? { href, "aria-label": `${subject} — ${title}` }
+    : {};
   return (
-    <article className="flex flex-col overflow-hidden rounded-[16px] border border-[#EFEFF1] bg-white transition-shadow hover:shadow-[0_4px_16px_rgba(10,11,20,0.06)]">
+    <Wrapper
+      {...wrapperProps}
+      className={cn(
+        "flex flex-col overflow-hidden rounded-[16px] border border-[#EFEFF1] bg-white transition-shadow hover:shadow-[0_4px_16px_rgba(10,11,20,0.06)]",
+        href && "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B0B0F] focus-visible:ring-offset-2",
+      )}
+    >
       <div className="flex items-start justify-between gap-2 px-3.5 pt-3">
         <span className="inline-flex items-center rounded-full border border-[#EFEFF1] bg-white px-2 py-0.5 text-[10.5px] font-semibold text-[#0B0B0F]">
           {subject}
@@ -86,6 +99,6 @@ export function CourseCard({
           </div>
         </div>
       </div>
-    </article>
+    </Wrapper>
   );
 }

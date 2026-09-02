@@ -59,7 +59,7 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        "scrollbar-none flex items-center gap-2 overflow-x-auto pb-0.5",
+        "flex flex-wrap items-center gap-2 pb-0.5",
         className,
       )}
     >
@@ -336,12 +336,10 @@ function RatingStepper({
                 className={cn(
                   "h-3 w-3 transition-colors",
                   filled
-                    ? value > 0
-                      ? "fill-[#DFFF3F] text-[#DFFF3F]"
-                      : "fill-[#0B0B0F] text-[#0B0B0F]"
+                    ? "fill-[#DFFF3F] text-[#DFFF3F]"
                     : value > 0
-                      ? "text-white/40"
-                      : "text-[#D5D7DB]",
+                      ? "fill-white/25 text-white/25"
+                      : "fill-[#D5D7DB] text-[#D5D7DB]",
                 )}
                 strokeWidth={0}
               />

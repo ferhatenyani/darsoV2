@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   Calendar,
@@ -20,10 +21,22 @@ import { SlidingNumber } from "@/components/library/sliding-number";
 import { TextMorph } from "@/components/library/text-morph";
 import { AppShell, useAppShell } from "@/components/app/app-shell";
 import { Applicant } from "@/components/app/applicant";
+import {
+  CandidatesDrawer,
+  type Candidate,
+} from "@/components/app/candidates-drawer";
 import { CourseCard } from "@/components/app/course-card";
+import {
+  JoinSessionModal,
+  type JoinSessionData,
+} from "@/components/app/join-session-modal";
 import { MessagePreview } from "@/components/app/message-preview";
+import { NewRequestModal } from "@/components/app/new-request-modal";
 import { PageHeader } from "@/components/app/page-header";
-import { ComingSoonButton } from "@/components/app/coming-soon-button";
+import {
+  SessionDetailDrawer,
+  type SessionDetailData,
+} from "@/components/app/session-detail-drawer";
 import { SectionHeader } from "@/components/app/section-header";
 import { SessionRow } from "@/components/app/session-row";
 import { studentMobileTabs, studentNav } from "@/lib/nav";
@@ -48,6 +61,7 @@ const trending = [
     price: 220,
     nextSlot: "Ce soir · 20:00",
     tone: "soft-blue" as const,
+    slug: "youssef-amrani",
   },
   {
     subject: "Physique-Chimie",
@@ -58,6 +72,7 @@ const trending = [
     price: 200,
     nextSlot: "Demain · 18:00",
     tone: "cream" as const,
+    slug: "nadia-cherkaoui",
   },
   {
     subject: "Français",
@@ -68,14 +83,99 @@ const trending = [
     price: 250,
     nextSlot: "Jeu. · 17:30",
     tone: "lime" as const,
+    slug: "marc-dupont",
   },
 ];
 
-const upcoming = [
-  { when: "Aujourd'hui · 17:00", title: "Analyse — dérivées & fonction composée", teacher: "Youssef Amrani", duration: "60 min", dot: "#C4CFFF", joinable: true },
-  { when: "Aujourd'hui · 19:30", title: "DELF B2 — essai argumenté", teacher: "Marc Dupont", duration: "45 min", dot: "#DFFF3F", joinable: false },
-  { when: "Demain · 16:00", title: "Physique — mécanique du solide", teacher: "Nadia Cherkaoui", duration: "90 min", dot: "#F0EDE4", joinable: false },
+type UpcomingSession = {
+  id: string;
+  when: string;
+  title: string;
+  subject: string;
+  teacher: string;
+  teacherInitials: string;
+  duration: string;
+  dot: string;
+  joinable: boolean;
+  agenda: string[];
+  notes?: string;
+};
+
+const upcoming: UpcomingSession[] = [
+  {
+    id: "sess-1",
+    when: "Aujourd'hui · 17:00",
+    title: "Analyse — dérivées & fonction composée",
+    subject: "Mathématiques",
+    teacher: "Youssef Amrani",
+    teacherInitials: "YA",
+    duration: "60 min",
+    dot: "#C4CFFF",
+    joinable: true,
+    agenda: [
+      "Revoir les règles de dérivation (produit, quotient, chaîne)",
+      "3 exercices type Bac sur les fonctions composées",
+      "Retour sur le DS #4 : questions bloquantes",
+    ],
+    notes:
+      "Apporte ta fiche §3.2 et les 3 exercices que tu as marqués. On finit avec un mini-quiz.",
+  },
+  {
+    id: "sess-2",
+    when: "Aujourd'hui · 19:30",
+    title: "DELF B2 — essai argumenté",
+    subject: "Français",
+    teacher: "Marc Dupont",
+    teacherInitials: "MD",
+    duration: "45 min",
+    dot: "#DFFF3F",
+    joinable: false,
+    agenda: [
+      "Plan d'un essai argumenté en 20 min",
+      "Correction du plan sur « L'IA à l'école »",
+    ],
+  },
+  {
+    id: "sess-3",
+    when: "Demain · 16:00",
+    title: "Physique — mécanique du solide",
+    subject: "Physique-Chimie",
+    teacher: "Nadia Cherkaoui",
+    teacherInitials: "NC",
+    duration: "90 min",
+    dot: "#F0EDE4",
+    joinable: false,
+    agenda: [
+      "Chapitre 4 : moment cinétique",
+      "TP en direct : pendule pesant",
+    ],
+  },
 ];
+
+function toDetail(s: UpcomingSession): SessionDetailData {
+  return {
+    id: s.id,
+    title: s.title,
+    subject: s.subject,
+    teacher: { name: s.teacher, initials: s.teacherInitials },
+    whenLabel: s.when,
+    when: new Date().toISOString(),
+    duration: s.duration,
+    status: s.joinable ? "upcoming" : "upcoming",
+    agenda: s.agenda,
+    notes: s.notes,
+  };
+}
+
+function toJoin(s: UpcomingSession): JoinSessionData {
+  return {
+    title: s.title,
+    subject: s.subject,
+    teacher: { name: s.teacher, initials: s.teacherInitials },
+    whenLabel: s.when,
+    duration: s.duration,
+  };
+}
 
 const openRequest = { title: "Bac SVT · révision génétique en 2 semaines", postedAgo: "publiée il y a 2 jours" };
 
@@ -127,23 +227,190 @@ const appAds: AdSlide[] = [
   },
 ];
 
+/* ---------------- Page-level actions context ---------------- */
+
+type StudentActions = {
+  openNewRequest: () => void;
+  openCandidates: () => void;
+  openJoin: (session: UpcomingSession) => void;
+  openDetail: (session: UpcomingSession) => void;
+  goToDiscover: () => void;
+  goToSessions: () => void;
+  sessions: UpcomingSession[];
+  candidates: Candidate[];
+  request: { title: string; postedAgo: string };
+};
+
+const StudentActionsContext = createContext<StudentActions | null>(null);
+
+function useStudentActions(): StudentActions {
+  const v = useContext(StudentActionsContext);
+  if (!v) throw new Error("StudentActions provider missing");
+  return v;
+}
+
 /* ---------------- Page ---------------- */
 
 export default function StudentDashboardPage() {
-  return (
-    <AppShell
-      nav={studentNav}
-      mobileTabs={studentMobileTabs}
-      user={student}
-      desktopMain={<DesktopMain />}
-      rail={<RightRail />}
-      mobileHeader={{
-        title: `Bonjour, ${student.firstName}`,
-        subtitle: "Mar. 1 sept. · 2 séances aujourd'hui",
-      }}
-      mobileChildren={<MobileBody />}
-    />
+  const router = useRouter();
+  const [newRequestOpen, setNewRequestOpen] = useState(false);
+  const [candidatesOpen, setCandidatesOpen] = useState(false);
+  const [joinSession, setJoinSession] = useState<UpcomingSession | null>(null);
+  const [detailSession, setDetailSession] = useState<UpcomingSession | null>(null);
+  const [sessions, setSessions] = useState<UpcomingSession[]>(upcoming);
+  const [currentRequest, setCurrentRequest] = useState(openRequest);
+  const [candidates] = useState<Candidate[]>(
+    applicants.map((a, i) => ({
+      id: `app-${i}`,
+      name: a.name,
+      initials: a.initials,
+      subject: a.subject,
+      rating: a.rating,
+      price: a.price,
+      message:
+        i === 0
+          ? "Salut Sara, je révise la génétique depuis 6 ans avec des Terminale S — je te propose 3 séances ciblées + 2 QCM d'entraînement."
+          : i === 1
+            ? "Bonjour, je peux t'aider à structurer la révision en 2 semaines. Dispo tous les soirs après 18h."
+            : "Hello, prof de SVT depuis 9 ans, spécialisé en génétique. Je te fais un plan personnalisé + corrigés.",
+    })),
   );
+
+  const actions: StudentActions = {
+    openNewRequest: () => setNewRequestOpen(true),
+    openCandidates: () => setCandidatesOpen(true),
+    openJoin: (s) => setJoinSession(s),
+    openDetail: (s) => setDetailSession(s),
+    goToDiscover: () => router.push("/student/discover"),
+    goToSessions: () => router.push("/student/sessions"),
+    sessions,
+    candidates,
+    request: currentRequest,
+  };
+
+  return (
+    <StudentActionsContext.Provider value={actions}>
+      <AppShell
+        nav={studentNav}
+        mobileTabs={studentMobileTabs}
+        user={student}
+        desktopMain={<DesktopMain />}
+        rail={<RightRail />}
+        mobileHeader={{
+          title: `Bonjour, ${student.firstName}`,
+          subtitle: "Mar. 1 sept. · 2 séances aujourd'hui",
+        }}
+        mobileChildren={<MobileBody />}
+      />
+
+      <NewRequestModal
+        open={newRequestOpen}
+        onClose={() => setNewRequestOpen(false)}
+        onSubmit={(payload) => {
+          setCurrentRequest({
+            title: payload.title,
+            postedAgo: "publiée à l'instant",
+          });
+        }}
+      />
+
+      <CandidatesDrawer
+        open={candidatesOpen}
+        onClose={() => setCandidatesOpen(false)}
+        requestTitle={currentRequest.title}
+        candidates={candidates}
+      />
+
+      <JoinSessionModal
+        open={joinSession !== null}
+        onClose={() => setJoinSession(null)}
+        session={joinSession ? toJoin(joinSession) : null}
+      />
+
+      {detailSession ? (
+        <SessionDetailModal
+          session={toDetail(detailSession)}
+          onClose={() => setDetailSession(null)}
+          onJoin={() => {
+            const s = detailSession;
+            setDetailSession(null);
+            if (s) setJoinSession(s);
+          }}
+          onCancel={() => {
+            setSessions((prev) => prev.filter((x) => x.id !== detailSession.id));
+            setDetailSession(null);
+          }}
+          onMessage={() => {
+            const s = detailSession;
+            setDetailSession(null);
+            if (s) router.push("/student/messages");
+          }}
+          onReschedule={() => {
+            // Local UX only: flash a small toast via alert-like state is overkill;
+            // acknowledge by closing. Full reschedule requires backend.
+            setDetailSession(null);
+          }}
+        />
+      ) : null}
+    </StudentActionsContext.Provider>
+  );
+}
+
+/* Modal wrapper that presents SessionDetailDrawer centered. */
+function SessionDetailModal({
+  session,
+  onClose,
+  onJoin,
+  onCancel,
+  onMessage,
+  onReschedule,
+}: {
+  session: SessionDetailData;
+  onClose: () => void;
+  onJoin: () => void;
+  onCancel: () => void;
+  onMessage: () => void;
+  onReschedule: () => void;
+}) {
+  useEscapeToClose(onClose);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Séance : ${session.title}`}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div
+        aria-hidden
+        onClick={onClose}
+        className="absolute inset-0 bg-[#0B0B0F]/40 backdrop-blur-sm"
+      />
+      <div className="relative flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden">
+        <SessionDetailDrawer
+          session={session}
+          onBack={onClose}
+          onJoin={onJoin}
+          onCancel={onCancel}
+          onMessage={onMessage}
+          onReschedule={onReschedule}
+        />
+      </div>
+    </div>
+  );
+}
+
+function useEscapeToClose(onClose: () => void) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
 }
 
 /* ================================================================
@@ -152,6 +419,8 @@ export default function StudentDashboardPage() {
 
 function DesktopMain() {
   const { railOpen, openRail } = useAppShell();
+  const { openNewRequest, openJoin, openDetail, goToSessions, sessions } =
+    useStudentActions();
   return (
     <div className="p-6">
       <PageHeader
@@ -172,13 +441,22 @@ function DesktopMain() {
         actions={
           <>
             <GooeyInput placeholder="Chercher un prof, une matière…" />
-            <button
-              aria-label="Calendrier"
+            <Link
+              href="/student/sessions"
+              aria-label="Voir mes séances"
+              onClick={(e) => {
+                e.preventDefault();
+                goToSessions();
+              }}
               className="grid h-9 w-9 place-items-center rounded-full border border-[#EFEFF1] text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
             >
               <Calendar className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-            <button className="ml-0.5 flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]">
+            </Link>
+            <button
+              type="button"
+              onClick={openNewRequest}
+              className="ml-0.5 flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+            >
               <Plus className="h-3.5 w-3.5" strokeWidth={2.25} />
               Nouvelle demande
             </button>
@@ -206,6 +484,7 @@ function DesktopMain() {
           title="Besoin d'un prof précis ?"
           hoverTitle="Publie-la en 30 secondes"
           body="Décris ton objectif, laisse les profs postuler — style Upwork."
+          onClick={openNewRequest}
         />
         <QuickAction
           tone="dark"
@@ -213,6 +492,7 @@ function DesktopMain() {
           title="Trouve un prof par matière"
           hoverTitle="240+ profs vérifiés"
           body="Filtre par matière, tarif et disponibilité."
+          href="/student/discover"
         />
       </div>
 
@@ -225,7 +505,11 @@ function DesktopMain() {
         />
         <div className="mt-3.5 grid grid-cols-3 gap-2.5">
           {trending.map((course) => (
-            <CourseCard key={course.title} {...course} />
+            <CourseCard
+              key={course.title}
+              {...course}
+              href={`/teacher/preview/${course.slug}`}
+            />
           ))}
         </div>
       </section>
@@ -237,8 +521,19 @@ function DesktopMain() {
           actionHref="/student/sessions"
         />
         <div className="mt-3.5 divide-y divide-[#EFEFF1] overflow-hidden rounded-2xl border border-[#EFEFF1]">
-          {upcoming.map((session) => (
-            <SessionRow key={session.title} {...session} />
+          {sessions.slice(0, 3).map((session) => (
+            <SessionRow
+              key={session.id}
+              when={session.when}
+              title={session.title}
+              teacher={session.teacher}
+              duration={session.duration}
+              dot={session.dot}
+              joinable={session.joinable}
+              onSelect={() => openDetail(session)}
+              onJoin={() => openJoin(session)}
+              onDetails={() => openDetail(session)}
+            />
           ))}
         </div>
       </section>
@@ -248,6 +543,7 @@ function DesktopMain() {
 
 function RightRail() {
   const { closeRail } = useAppShell();
+  const { openCandidates, request, candidates } = useStudentActions();
   return (
     <>
       <div className="rounded-[20px] bg-white p-4 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
@@ -255,7 +551,7 @@ function RightRail() {
           <h3 className="text-[13px] font-semibold text-[#0B0B0F]">Candidatures en attente</h3>
           <div className="flex items-center gap-1.5">
             <span className="rounded-full bg-[#DFFF3F] px-1.5 py-0.5 text-[10px] font-semibold text-[#0B0B0F]">
-              {applicants.length} nouvelles
+              {candidates.length} nouvelles
             </span>
             <button
               onClick={closeRail}
@@ -271,17 +567,28 @@ function RightRail() {
             Ta demande
           </p>
           <p className="mt-0.5 truncate text-[11.5px] font-semibold text-[#0B0B0F]">
-            {openRequest.title}
+            {request.title}
           </p>
-          <p className="text-[10px] text-[#8A8D93]">{openRequest.postedAgo}</p>
+          <p className="text-[10px] text-[#8A8D93]">{request.postedAgo}</p>
         </div>
         <div className="mt-3 space-y-3">
-          {applicants.map((a) => (
-            <Applicant key={a.name} {...a} />
+          {candidates.map((a) => (
+            <Applicant
+              key={a.id ?? a.name}
+              name={a.name}
+              initials={a.initials}
+              subject={a.subject}
+              rating={a.rating}
+              price={a.price}
+            />
           ))}
         </div>
-        <button className="mt-3.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0B0B0F] py-2 text-[11.5px] font-semibold text-white">
-          Voir les {applicants.length} candidatures
+        <button
+          type="button"
+          onClick={openCandidates}
+          className="mt-3.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0B0B0F] py-2 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+        >
+          Voir les {candidates.length} candidatures
           <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
         </button>
       </div>
@@ -401,10 +708,15 @@ function StatsStrip() {
 }
 
 function HeroGrid() {
-  const s = upcoming[0];
+  const { sessions, openJoin, openDetail, openNewRequest } = useStudentActions();
+  const s = sessions[0];
   return (
     <div className="mt-3 grid grid-cols-2 gap-2 px-4">
-      <div className="relative flex flex-col overflow-hidden rounded-[18px] bg-[#0B0B0F] p-3.5 text-white shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
+      <button
+        type="button"
+        onClick={() => (s.joinable ? openJoin(s) : openDetail(s))}
+        className="relative flex flex-col overflow-hidden rounded-[18px] bg-[#0B0B0F] p-3.5 text-left text-white shadow-[0_1px_2px_rgba(10,11,20,0.04)] transition-transform active:scale-[0.99]"
+      >
         <p className="text-[9.5px] font-semibold uppercase tracking-[0.09em] text-white/50">
           Prochaine · dans {nextSessionIn}
         </p>
@@ -415,18 +727,18 @@ function HeroGrid() {
           {s.teacher.split(" ")[0]} · {s.duration}
         </p>
         <div className="mt-auto pt-3">
-          <ComingSoonButton
-            message="La salle ouvre à H-5"
-            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#DFFF3F] py-1.5 text-[11.5px] font-semibold text-[#0B0B0F]"
-            flashClassName="!bg-[#0B0B0F] !text-[#DFFF3F]"
-          >
+          <span className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#DFFF3F] py-1.5 text-[11.5px] font-semibold text-[#0B0B0F]">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#0B0B0F]" />
-            Rejoindre
-          </ComingSoonButton>
+            {s.joinable ? "Rejoindre" : "Voir la séance"}
+          </span>
         </div>
-      </div>
+      </button>
 
-      <button className="group relative flex flex-col overflow-hidden rounded-[18px] bg-[#DFFF3F] p-3.5 text-left text-[#0B0B0F]">
+      <button
+        type="button"
+        onClick={openNewRequest}
+        className="group relative flex flex-col overflow-hidden rounded-[18px] bg-[#DFFF3F] p-3.5 text-left text-[#0B0B0F] transition-transform active:scale-[0.99]"
+      >
         <p className="text-[9.5px] font-semibold uppercase tracking-[0.09em] text-[#0B0B0F]/60">
           Poste une demande
         </p>
@@ -457,10 +769,13 @@ function MobileTrending() {
           </h2>
           <p className="mt-0.5 text-[11px] text-[#8A8D93]">Les plus réservés en Terminale S</p>
         </div>
-        <button className="flex items-center gap-1 text-[11.5px] font-medium text-[#8A8D93]">
+        <Link
+          href="/student/discover"
+          className="flex items-center gap-1 text-[11.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+        >
           <SlidersHorizontal className="h-3 w-3" strokeWidth={2} />
           Filtrer
-        </button>
+        </Link>
       </div>
       <div
         className="scrollbar-none mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1"
@@ -468,7 +783,7 @@ function MobileTrending() {
       >
         {trending.map((course) => (
           <div key={course.title} className="w-[74vw] max-w-[280px] shrink-0 snap-start">
-            <CourseCard {...course} />
+            <CourseCard {...course} href={`/teacher/preview/${course.slug}`} />
           </div>
         ))}
       </div>
@@ -477,13 +792,14 @@ function MobileTrending() {
 }
 
 function MobileApplications() {
+  const { openCandidates, request, candidates } = useStudentActions();
   return (
     <section className="mt-5 px-4">
       <div className="rounded-[20px] bg-white p-4 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
         <div className="flex items-center justify-between">
           <h3 className="text-[13px] font-semibold text-[#0B0B0F]">Candidatures en attente</h3>
           <span className="rounded-full bg-[#DFFF3F] px-1.5 py-0.5 text-[10px] font-semibold text-[#0B0B0F]">
-            {applicants.length} nouvelles
+            {candidates.length} nouvelles
           </span>
         </div>
         <div className="mt-2 rounded-md bg-[#F5F5F7] p-2">
@@ -491,16 +807,27 @@ function MobileApplications() {
             Ta demande
           </p>
           <p className="mt-0.5 truncate text-[11.5px] font-semibold text-[#0B0B0F]">
-            {openRequest.title}
+            {request.title}
           </p>
         </div>
         <div className="mt-3 space-y-3">
-          {applicants.map((a) => (
-            <Applicant key={a.name} {...a} />
+          {candidates.map((a) => (
+            <Applicant
+              key={a.id ?? a.name}
+              name={a.name}
+              initials={a.initials}
+              subject={a.subject}
+              rating={a.rating}
+              price={a.price}
+            />
           ))}
         </div>
-        <button className="mt-3.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0B0B0F] py-2.5 text-[12px] font-semibold text-white">
-          Voir les {applicants.length} candidatures
+        <button
+          type="button"
+          onClick={openCandidates}
+          className="mt-3.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0B0B0F] py-2.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+        >
+          Voir les {candidates.length} candidatures
           <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
         </button>
       </div>
@@ -583,21 +910,28 @@ function QuickAction({
   title,
   hoverTitle,
   body,
+  onClick,
+  href,
 }: {
   tone: "lime" | "dark";
   eyebrow: string;
   title: string;
   hoverTitle: string;
   body: string;
+  onClick?: () => void;
+  href?: string;
 }) {
   const isLime = tone === "lime";
   const [hover, setHover] = useState(false);
+  const Wrapper = (href ? Link : "button") as React.ElementType;
+  const wrapperProps = (href ? { href } : { type: "button", onClick }) as Record<string, unknown>;
   return (
-    <button
+    <Wrapper
+      {...wrapperProps}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       className={cn(
-        "group relative flex h-[148px] flex-col justify-between overflow-hidden rounded-[18px] p-4 text-left transition-transform hover:-translate-y-0.5",
+        "group relative flex h-[148px] flex-col justify-between overflow-hidden rounded-[18px] p-4 text-left transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B0B0F] focus-visible:ring-offset-2",
         isLime ? "bg-[#DFFF3F] text-[#0B0B0F]" : "bg-[#0B0B0F] text-white",
       )}
     >
@@ -632,7 +966,7 @@ function QuickAction({
           {isLime ? <Plus className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}
         </span>
       </div>
-    </button>
+    </Wrapper>
   );
 }
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { MoreHorizontal, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Check, MoreHorizontal, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type PaymentBrand = "visa" | "mastercard" | "cih";
@@ -26,28 +28,35 @@ export type PaymentMethodRowProps =
 
 export function PaymentMethodRow(props: PaymentMethodRowProps) {
   if (props.variant === "add") {
-    return (
-      <button
-        type="button"
-        onClick={props.onClick}
-        className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#D5D7DB] bg-white px-3.5 py-3 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:border-[#0B0B0F] hover:bg-[#F5F5F7]",
-          props.className,
-        )}
-      >
-        <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-        {props.label ?? "Ajouter une carte"}
-      </button>
-    );
+    return <AddVariant {...props} />;
   }
 
   const { brand, last4, expiry, holder, isDefault, onMenu, onClick, className } =
     props;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-[14px] border border-[#EFEFF1] bg-white px-3 py-2.5 transition-colors hover:border-[#D5D7DB]",
+        "relative flex items-center gap-3 rounded-[14px] border border-[#EFEFF1] bg-white px-3 py-2.5 transition-colors hover:border-[#D5D7DB]",
         onClick && "cursor-pointer",
         className,
       )}
@@ -81,18 +90,99 @@ export function PaymentMethodRow(props: PaymentMethodRowProps) {
           {holder ? `${holder} · ` : ""}Exp. {expiry}
         </p>
       </div>
-      <button
-        type="button"
-        aria-label="Options du moyen de paiement"
-        onClick={(e) => {
-          e.stopPropagation();
-          onMenu?.();
-        }}
-        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#8A8D93] transition-colors hover:bg-[#F5F5F7] hover:text-[#0B0B0F]"
-      >
-        <MoreHorizontal className="h-3.5 w-3.5" strokeWidth={1.75} />
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          aria-label="Options du moyen de paiement"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onMenu) onMenu();
+            else setMenuOpen((v) => !v);
+          }}
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#8A8D93] transition-colors hover:bg-[#F5F5F7] hover:text-[#0B0B0F]"
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" strokeWidth={1.75} />
+        </button>
+        <AnimatePresence>
+          {menuOpen ? (
+            <motion.div
+              ref={menuRef}
+              initial={{ opacity: 0, y: -4, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.96 }}
+              transition={{ duration: 0.12 }}
+              className="absolute right-0 top-8 z-40 w-40 overflow-hidden rounded-[12px] bg-white p-1 shadow-[0_10px_30px_rgba(11,11,15,0.14)] ring-1 ring-[#EFEFF1]"
+            >
+              {!isDefault ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                  }}
+                  className="block w-full rounded-[8px] px-2.5 py-1.5 text-left text-[12px] font-medium text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+                >
+                  Rendre par défaut
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                }}
+                className="block w-full rounded-[8px] px-2.5 py-1.5 text-left text-[12px] font-medium text-[#8A8D93] transition-colors hover:bg-[#F5F5F7] hover:text-[#0B0B0F]"
+              >
+                Supprimer
+              </button>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
     </div>
+  );
+}
+
+function AddVariant({
+  onClick,
+  className,
+  label,
+}: {
+  onClick?: () => void;
+  className?: string;
+  label?: string;
+}) {
+  const [pinged, setPinged] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (onClick) {
+          onClick();
+          return;
+        }
+        setPinged(true);
+        window.setTimeout(() => setPinged(false), 1600);
+      }}
+      className={cn(
+        "flex w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#D5D7DB] bg-white px-3.5 py-3 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:border-[#0B0B0F] hover:bg-[#F5F5F7]",
+        pinged && "border-[#0B0B0F] bg-[#F5F5F7]",
+        className,
+      )}
+    >
+      {pinged ? (
+        <>
+          <Check className="h-3.5 w-3.5" strokeWidth={2.25} />
+          Bientôt disponible
+        </>
+      ) : (
+        <>
+          <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+          {label ?? "Ajouter une carte"}
+        </>
+      )}
+    </button>
   );
 }
 

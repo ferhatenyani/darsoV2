@@ -57,7 +57,7 @@ export function SignInForm() {
           Bon retour
         </p>
         <h1
-          className="mt-2 text-[32px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#0B0B0F]"
+          className="mt-2 text-[26px] sm:text-[30px] md:text-[32px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#0B0B0F]"
           style={{ fontFamily: "var(--font-cabinet), system-ui, sans-serif" }}
         >
           Content de vous

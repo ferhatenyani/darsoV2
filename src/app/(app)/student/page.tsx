@@ -525,7 +525,7 @@ function MobileMonthlyStat() {
         </div>
         <div className="mt-2.5 flex items-end justify-between">
           <div>
-            <div className="font-[family-name:var(--font-cabinet)] text-[36px] font-bold leading-none tracking-tight">
+            <div className="font-[family-name:var(--font-cabinet)] text-[28px] sm:text-[32px] md:text-[36px] font-bold leading-none tracking-tight">
               <SlidingNumber value={monthlyStats.hours} />
               <span className="text-[15px] font-semibold text-white/50"> h</span>
             </div>

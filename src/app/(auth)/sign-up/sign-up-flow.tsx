@@ -185,7 +185,7 @@ export function SignUpFlow() {
               : "Presque prêt"}
         </p>
         <h1
-          className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#0B0B0F]"
+          className="mt-2 text-[24px] sm:text-[28px] md:text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-[#0B0B0F]"
           style={{ fontFamily: "var(--font-cabinet), system-ui, sans-serif" }}
         >
           {stepIndex === 0 ? (

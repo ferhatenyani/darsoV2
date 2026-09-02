@@ -82,7 +82,7 @@ export function KpiCard({
       </div>
 
       <div className="mt-4 flex items-baseline gap-1.5">
-        <span className="font-[family-name:var(--font-cabinet)] text-[32px] font-bold leading-none tracking-[-0.02em] tabular-nums">
+        <span className="font-[family-name:var(--font-cabinet)] text-[26px] sm:text-[30px] md:text-[32px] font-bold leading-none tracking-[-0.02em] tabular-nums">
           {value}
         </span>
         {unit ? (

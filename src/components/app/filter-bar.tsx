@@ -184,7 +184,7 @@ function DropdownChip({
           <ChevronDown className="h-3 w-3" strokeWidth={2} />
         )}
       </summary>
-      <div className="absolute left-0 top-9 z-30 min-w-[200px] rounded-[14px] border border-[#EFEFF1] bg-white p-2 shadow-[0_8px_24px_rgba(10,11,20,0.08)]">
+      <div className="absolute left-0 top-9 z-30 min-w-[200px] max-w-[calc(100vw-2rem)] rounded-[14px] border border-[#EFEFF1] bg-white p-2 shadow-[0_8px_24px_rgba(10,11,20,0.08)]">
         {children}
       </div>
     </details>
@@ -238,7 +238,7 @@ function PriceRange({
   const leftPct = ((valueMin - min) / (max - min)) * 100;
   const rightPct = ((valueMax - min) / (max - min)) * 100;
   return (
-    <div className="w-[220px] px-2 py-1.5">
+    <div className="w-[min(220px,calc(100vw-4rem))] px-2 py-1.5">
       <div className="flex items-baseline justify-between">
         <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#8A8D93]">
           Tarif horaire

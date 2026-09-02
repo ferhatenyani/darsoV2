@@ -1,13 +1,17 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { FloatingDock, type DockItem } from "@/components/library/floating-dock";
 import type { TabConfig } from "@/lib/nav";
+import { isNavActive } from "./sidebar";
 
 export function MobileTabBar({ tabs }: { tabs: TabConfig[] }) {
+  const pathname = usePathname();
   const dockItems: DockItem[] = tabs.map((t) => ({
     title: t.label,
     icon: <t.icon className="h-full w-full" strokeWidth={1.75} />,
-    active: t.active,
+    href: t.href,
+    active: isNavActive(pathname, t.href),
     badge: t.badge,
   }));
 

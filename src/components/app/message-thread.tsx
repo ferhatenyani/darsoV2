@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, MoreHorizontal, Phone, Video } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -160,11 +160,20 @@ function IconButton({
   label: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
 }) {
+  const [pinged, setPinged] = useState(false);
   return (
     <button
       type="button"
       aria-label={label}
-      className="grid h-8 w-8 place-items-center rounded-full text-[#6E7178] transition-colors hover:bg-[#F5F5F7] hover:text-[#0B0B0F]"
+      onClick={() => {
+        setPinged(true);
+        window.setTimeout(() => setPinged(false), 900);
+      }}
+      className={cn(
+        "grid h-8 w-8 place-items-center rounded-full text-[#6E7178] transition-colors hover:bg-[#F5F5F7] hover:text-[#0B0B0F]",
+        pinged && "bg-[#DFFF3F] text-[#0B0B0F]",
+      )}
+      title={pinged ? "Bientôt disponible" : label}
     >
       <Icon className="h-3.5 w-3.5" strokeWidth={1.9} />
     </button>

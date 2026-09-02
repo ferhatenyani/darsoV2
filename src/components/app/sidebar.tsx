@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -7,6 +9,17 @@ import { cn } from "@/lib/utils";
 import { springSoft, fadeQuick } from "@/lib/motion";
 import type { NavConfig, NavItemConfig } from "@/lib/nav";
 import { Avatar } from "./avatar";
+
+export function isNavActive(pathname: string | null, href?: string): boolean {
+  if (!href || !pathname) return false;
+  if (pathname === href) return true;
+  // Single-segment hrefs like /student or /teacher are role roots — they should
+  // only light up when the user is exactly there, otherwise every subroute
+  // would also highlight the dashboard.
+  const segments = href.split("/").filter(Boolean);
+  if (segments.length <= 1) return false;
+  return pathname.startsWith(href + "/");
+}
 
 export function Sidebar({
   collapsed,
@@ -144,19 +157,20 @@ export function NavItem({
   collapsed: boolean;
   onClick?: () => void;
 }) {
-  const { icon: Icon, label, active, badge } = item;
-  return (
-    <button
-      onClick={onClick}
-      title={collapsed ? label : undefined}
-      className={cn(
-        "group relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[12.5px] font-medium transition-colors",
-        active
-          ? "bg-[#0B0B0F] text-white"
-          : "text-[#4A4D54] hover:bg-[#F5F5F7] hover:text-[#0B0B0F]",
-        collapsed && "justify-center",
-      )}
-    >
+  const { icon: Icon, label, href, badge } = item;
+  const pathname = usePathname();
+  const active = isNavActive(pathname, href);
+
+  const className = cn(
+    "group relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[12.5px] font-medium transition-colors",
+    active
+      ? "bg-[#0B0B0F] text-white"
+      : "text-[#4A4D54] hover:bg-[#F5F5F7] hover:text-[#0B0B0F]",
+    collapsed && "justify-center",
+  );
+
+  const inner = (
+    <>
       <Icon className="h-[16px] w-[16px] shrink-0" strokeWidth={1.75} />
       <AnimatePresence initial={false}>
         {!collapsed ? (
@@ -187,6 +201,31 @@ export function NavItem({
           </span>
         )
       ) : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        title={collapsed ? label : undefined}
+        aria-current={active ? "page" : undefined}
+        className={className}
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={collapsed ? label : undefined}
+      className={className}
+    >
+      {inner}
     </button>
   );
 }

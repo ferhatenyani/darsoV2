@@ -517,9 +517,13 @@ function CategoryCard({
 }) {
   const Icon = category.icon;
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href={`#faq-${category.id}`}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+        history.replaceState(null, "", `#faq-${category.id}`);
+      }}
       className={cn(
         "group flex flex-col items-start gap-2.5 rounded-[20px] border border-[#EFEFF1] bg-white p-4 text-left transition-colors",
         "hover:bg-[#F5F5F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B0B0F] focus-visible:ring-offset-2",
@@ -536,7 +540,7 @@ function CategoryCard({
           {category.count} articles
         </p>
       </div>
-    </button>
+    </a>
   );
 }
 

@@ -411,7 +411,7 @@ function HeroCard() {
 
         <Link
           ref={trRef}
-          href="/help"
+          href="/student/help"
           aria-label="Ouvrir le guide"
           className="group absolute top-0 right-0 grid h-11 w-11 place-items-center rounded-full bg-white text-foreground ring-1 ring-border shadow-[0_8px_22px_-10px_rgba(10,11,14,0.20),0_3px_8px_-4px_rgba(10,11,14,0.10)] transition-all duration-200 hover:-translate-y-[1px] hover:ring-border-strong focus-visible:outline-none focus-visible:shadow-focus md:h-12 md:w-12"
           style={revealStyle({ delay: 120, from: "translate(8px, -8px) rotate(-15deg) scale(0.9)" })}
@@ -428,7 +428,7 @@ function HeroCard() {
           style={revealStyle({ delay: 250, from: "translate(0, 12px) scale(0.96)" })}
         >
           <Link
-            href="/teach"
+            href="/teacher"
             className="group relative flex w-[104px] items-center justify-center overflow-hidden rounded-full border-2 border-foreground bg-white py-2 text-center text-[12px] font-bold tracking-tight text-foreground shadow-[0_10px_24px_-14px_rgba(10,11,14,0.35)] focus-visible:outline-none focus-visible:shadow-focus min-[480px]:w-[128px] min-[480px]:py-2.5 min-[480px]:text-[13px] sm:w-[148px] sm:py-3 sm:text-[14px]"
           >
             <span className="relative z-20 inline-block translate-x-1 transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0">
@@ -445,7 +445,7 @@ function HeroCard() {
           </Link>
 
           <Link
-            href="/browse"
+            href="/student"
             className="group relative flex w-[104px] items-center justify-center overflow-hidden rounded-full border-2 border-foreground bg-white py-2 text-center text-[12px] font-bold tracking-tight text-foreground shadow-[0_10px_24px_-14px_rgba(10,11,14,0.35)] focus-visible:outline-none focus-visible:shadow-focus min-[480px]:w-[128px] min-[480px]:py-2.5 min-[480px]:text-[13px] sm:w-[148px] sm:py-3 sm:text-[14px]"
           >
             <span className="relative z-20 inline-block translate-x-1 transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0">

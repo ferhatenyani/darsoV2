@@ -1,0 +1,266 @@
+[
+  {
+    "route": "/",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/sign-in",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/sign-up",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/forgot-password",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/discover",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/sessions",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/payments",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/messages",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/favorites",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/notifications",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/notifications/settings",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/help",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/help/dispute",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/help/contact",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/profile",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/student/reviews",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/discover",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/sessions",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/earnings",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/stats",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/reviews",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/messages",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/verification",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/notifications",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/notifications/settings",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/help",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/help/dispute",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/help/contact",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/profile",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/agency",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "route": "/teacher/preview/youssef-amrani",
+    "loadStatus": 200,
+    "dead": [],
+    "broken": [],
+    "consoleErrors": [],
+    "pageErrors": []
+  }
+]

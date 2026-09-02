@@ -9,6 +9,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ export type DockItem = {
   title: string;
   icon: React.ReactNode;
   onClick?: () => void;
+  href?: string;
   active?: boolean;
   badge?: number;
 };
@@ -71,10 +73,12 @@ function IconContainer({
   title,
   icon,
   onClick,
+  href,
   active,
   badge,
 }: DockItem & { mouseX: MotionValue }) {
   const ref = useRef<HTMLButtonElement>(null);
+  const router = useRouter();
 
   const distance = useTransform(mouseX, (val) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
@@ -99,8 +103,12 @@ function IconContainer({
       style={{ width, height }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
+      onClick={() => {
+        onClick?.();
+        if (href) router.push(href);
+      }}
       aria-label={title}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "relative flex aspect-square items-center justify-center rounded-full transition-colors",
         active ? "bg-[#DFFF3F] text-[#0B0B0F]" : "bg-white/5 text-white/70 hover:text-white",
@@ -139,6 +147,7 @@ function IconContainer({
 
 function BurgerDock({ items, className }: { items: DockItem[]; className?: string }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   return (
     <div className={cn("relative", className)}>
       <AnimatePresence>
@@ -155,6 +164,7 @@ function BurgerDock({ items, className }: { items: DockItem[]; className?: strin
                 <button
                   onClick={() => {
                     item.onClick?.();
+                    if (item.href) router.push(item.href);
                     setOpen(false);
                   }}
                   aria-label={item.title}

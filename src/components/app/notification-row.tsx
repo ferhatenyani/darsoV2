@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Bell,
@@ -58,11 +59,55 @@ export function NotificationRow({
 }: NotificationRowProps) {
   const Icon = iconByCategory[category];
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleClick = () => {
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const handleBodyClick = () => {
     if (unread && onMarkRead) onMarkRead(id);
     if (action?.onClick) action.onClick();
   };
+
+  const bodyContent = (
+    <>
+      <p
+        className={cn(
+          "truncate text-[13px] leading-snug",
+          unread ? "font-bold text-[#0B0B0F]" : "font-semibold text-[#4A4D54]",
+        )}
+      >
+        {title}
+      </p>
+      {body ? (
+        <p
+          className={cn(
+            "mt-0.5 line-clamp-2 text-[12px] leading-snug",
+            unread ? "text-[#4A4D54]" : "text-[#8A8D93]",
+          )}
+        >
+          {body}
+        </p>
+      ) : null}
+      <div className="mt-1.5">
+        <Eyebrow>{time}</Eyebrow>
+      </div>
+    </>
+  );
 
   return (
     <motion.div
@@ -101,34 +146,27 @@ export function NotificationRow({
         ) : null}
       </div>
 
-      {/* Middle */}
-      <button
-        type="button"
-        onClick={handleClick}
-        className="min-w-0 flex-1 cursor-pointer text-left"
-      >
-        <p
-          className={cn(
-            "truncate text-[13px] leading-snug",
-            unread ? "font-bold text-[#0B0B0F]" : "font-semibold text-[#4A4D54]",
-          )}
+      {/* Middle — link when we have a related resource, button when we can still
+          mark-as-read, plain div otherwise (already read + non-actionable). */}
+      {action?.href ? (
+        <Link
+          href={action.href}
+          onClick={handleBodyClick}
+          className="min-w-0 flex-1 cursor-pointer text-left"
         >
-          {title}
-        </p>
-        {body ? (
-          <p
-            className={cn(
-              "mt-0.5 line-clamp-2 text-[12px] leading-snug",
-              unread ? "text-[#4A4D54]" : "text-[#8A8D93]",
-            )}
-          >
-            {body}
-          </p>
-        ) : null}
-        <div className="mt-1.5">
-          <Eyebrow>{time}</Eyebrow>
-        </div>
-      </button>
+          {bodyContent}
+        </Link>
+      ) : unread && onMarkRead ? (
+        <button
+          type="button"
+          onClick={handleBodyClick}
+          className="min-w-0 flex-1 cursor-pointer text-left"
+        >
+          {bodyContent}
+        </button>
+      ) : (
+        <div className="min-w-0 flex-1 text-left">{bodyContent}</div>
+      )}
 
       {/* Right */}
       <div className="flex shrink-0 flex-col items-end justify-between gap-1.5">
@@ -146,18 +184,14 @@ export function NotificationRow({
           </button>
           <AnimatePresence>
             {menuOpen ? (
-              <>
-                <div
-                  className="fixed inset-0 z-30"
-                  onClick={() => setMenuOpen(false)}
-                />
-                <motion.div
-                  initial={{ opacity: 0, y: -4, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4, scale: 0.96 }}
-                  transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-8 z-40 w-40 overflow-hidden rounded-[12px] bg-white p-1 shadow-[0_10px_30px_rgba(11,11,15,0.14)] ring-1 ring-[#EFEFF1]"
-                >
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 top-8 z-40 w-40 overflow-hidden rounded-[12px] bg-white p-1 shadow-[0_10px_30px_rgba(11,11,15,0.14)] ring-1 ring-[#EFEFF1]"
+              >
                   {unread && onMarkRead ? (
                     <button
                       type="button"
@@ -182,8 +216,7 @@ export function NotificationRow({
                       Supprimer
                     </button>
                   ) : null}
-                </motion.div>
-              </>
+              </motion.div>
             ) : null}
           </AnimatePresence>
         </div>

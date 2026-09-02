@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ComingSoonButton } from "@/components/app/coming-soon-button";
 import {
   ArrowUpRight,
   Bell,
@@ -209,6 +211,7 @@ function DesktopMain({
           title="Demandes d'élèves qui matchent"
           subtitle="Postes récents dans ta spécialité"
           action="Voir toutes"
+          actionHref="/teacher/discover"
         />
         <div
           className="scrollbar-none mt-3.5 flex snap-x snap-mandatory gap-2.5 overflow-x-auto pb-2"
@@ -222,7 +225,11 @@ function DesktopMain({
 
       {/* Upcoming sessions */}
       <section className="mt-7">
-        <SectionHeader title="Prochaines séances" action="Voir toutes" />
+        <SectionHeader
+          title="Prochaines séances"
+          action="Voir toutes"
+          actionHref="/teacher/sessions"
+        />
         <div className="mt-3.5 divide-y divide-[#EFEFF1] overflow-hidden rounded-2xl border border-[#EFEFF1]">
           {mockUpcomingSessions.slice(0, 5).map((s) => (
             <SessionRow key={s.title} {...s} />
@@ -266,13 +273,21 @@ function NextSessionCard({ s }: { s: SessionShape }) {
         </div>
       </div>
       <div className="mt-auto flex items-center gap-3 pt-4">
-        <button className="flex items-center gap-1.5 rounded-full bg-[#0B0B0F] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]">
+        <ComingSoonButton
+          message="La salle ouvre à H-5"
+          className="flex items-center gap-1.5 rounded-full bg-[#0B0B0F] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+          flashClassName="!bg-[#DFFF3F] !text-[#0B0B0F]"
+        >
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#DFFF3F]" />
           Rejoindre
-        </button>
-        <button className="text-[11.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]">
+        </ComingSoonButton>
+        <ComingSoonButton
+          message="Bientôt"
+          className="text-[11.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+          flashClassName="!text-[#0B0B0F]"
+        >
           Reprogrammer
-        </button>
+        </ComingSoonButton>
       </div>
     </div>
   );
@@ -374,9 +389,12 @@ function RightRail({
       <div className="rounded-[20px] bg-white p-4 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
         <div className="flex items-center justify-between">
           <h3 className="text-[13px] font-semibold text-[#0B0B0F]">Messages</h3>
-          <button className="text-[10.5px] font-medium text-[#8A8D93]">
+          <Link
+            href="/teacher/messages"
+            className="text-[10.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+          >
             Boîte de réception
-          </button>
+          </Link>
         </div>
         <div className="mt-3 space-y-3">
           {mockUnreadTeacherMessages.slice(0, 3).map((m) => (
@@ -641,9 +659,12 @@ function MobileSessions() {
         <h3 className="font-[family-name:var(--font-cabinet)] text-[17px] font-bold tracking-tight text-[#0B0B0F]">
           Prochaines séances
         </h3>
-        <button className="text-[11.5px] font-medium text-[#8A8D93]">
+        <Link
+          href="/teacher/sessions"
+          className="text-[11.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+        >
           Voir toutes
-        </button>
+        </Link>
       </div>
       <div className="mt-3 divide-y divide-[#EFEFF1] overflow-hidden rounded-2xl border border-[#EFEFF1] bg-white">
         {mockUpcomingSessions.slice(0, 4).map((s) => (
@@ -708,9 +729,12 @@ function MobileMessagesSection() {
             <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
             Messages non lus
           </h3>
-          <button className="text-[10.5px] font-medium text-[#8A8D93]">
+          <Link
+            href="/teacher/messages"
+            className="text-[10.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+          >
             Voir tout
-          </button>
+          </Link>
         </div>
         <div className="mt-3 space-y-3">
           {mockUnreadTeacherMessages.slice(0, 3).map((m) => (

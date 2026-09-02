@@ -1,6 +1,7 @@
 "use client";
 
 import { Calendar } from "lucide-react";
+import { ComingSoonButton } from "@/components/app/coming-soon-button";
 import { StatefulButton } from "@/components/library/stateful-button";
 
 export type SessionRowProps = {
@@ -46,9 +47,13 @@ export function SessionRow({
           </span>
         </StatefulButton>
       ) : (
-        <button className="rounded-full border border-[#EFEFF1] px-3 py-1.5 text-[11.5px] font-semibold text-[#0B0B0F]">
+        <ComingSoonButton
+          message="Détails à venir"
+          className="rounded-full border border-[#EFEFF1] px-3 py-1.5 text-[11.5px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+          flashClassName="!bg-[#F5F5F7]"
+        >
           Détails
-        </button>
+        </ComingSoonButton>
       )}
     </div>
   );

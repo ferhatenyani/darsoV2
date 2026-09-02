@@ -16,6 +16,7 @@ import {
   Video,
 } from "lucide-react";
 import { AppShell } from "@/components/app/app-shell";
+import { ComingSoonButton } from "@/components/app/coming-soon-button";
 import { PageHeader } from "@/components/app/page-header";
 import { TabSwitcher } from "@/components/app/tab-switcher";
 import { EmptyState } from "@/components/app/empty-state";
@@ -453,14 +454,22 @@ function DesktopMain({
         subline="Rejoins tes cours en un clic, retrouve tes enregistrements et tes notes."
         actions={
           <>
-            <button className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]">
+            <ComingSoonButton
+              message="Vue calendrier — bientôt"
+              className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+              flashClassName="!bg-[#F5F5F7]"
+            >
               <CalendarIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
               Vue calendrier
-            </button>
-            <button className="flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]">
+            </ComingSoonButton>
+            <ComingSoonButton
+              message="La salle ouvre à H-5"
+              className="flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+              flashClassName="!bg-[#DFFF3F] !text-[#0B0B0F]"
+            >
               <Video className="h-3.5 w-3.5" strokeWidth={2} />
               Salle d&apos;attente
-            </button>
+            </ComingSoonButton>
           </>
         }
       />

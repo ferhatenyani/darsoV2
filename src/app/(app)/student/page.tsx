@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ArrowUpRight,
   Calendar,
@@ -22,6 +23,7 @@ import { Applicant } from "@/components/app/applicant";
 import { CourseCard } from "@/components/app/course-card";
 import { MessagePreview } from "@/components/app/message-preview";
 import { PageHeader } from "@/components/app/page-header";
+import { ComingSoonButton } from "@/components/app/coming-soon-button";
 import { SectionHeader } from "@/components/app/section-header";
 import { SessionRow } from "@/components/app/session-row";
 import { studentMobileTabs, studentNav } from "@/lib/nav";
@@ -219,6 +221,7 @@ function DesktopMain() {
           title="Tendances de la semaine"
           subtitle="Les profs les plus réservés en Terminale S"
           action="Tout voir"
+          actionHref="/student/discover"
         />
         <div className="mt-3.5 grid grid-cols-3 gap-2.5">
           {trending.map((course) => (
@@ -228,7 +231,11 @@ function DesktopMain() {
       </section>
 
       <section className="mt-7 pb-2">
-        <SectionHeader title="Tes prochaines séances" action="Tout voir" />
+        <SectionHeader
+          title="Tes prochaines séances"
+          action="Tout voir"
+          actionHref="/student/sessions"
+        />
         <div className="mt-3.5 divide-y divide-[#EFEFF1] overflow-hidden rounded-2xl border border-[#EFEFF1]">
           {upcoming.map((session) => (
             <SessionRow key={session.title} {...session} />
@@ -282,7 +289,12 @@ function RightRail() {
       <div className="rounded-[20px] bg-white p-4 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
         <div className="flex items-center justify-between">
           <h3 className="text-[13px] font-semibold text-[#0B0B0F]">Messages</h3>
-          <button className="text-[10.5px] font-medium text-[#8A8D93]">Boîte de réception</button>
+          <Link
+            href="/student/messages"
+            className="text-[10.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+          >
+            Boîte de réception
+          </Link>
         </div>
         <div className="mt-3 space-y-3">
           {messages.map((m) => (
@@ -403,10 +415,14 @@ function HeroGrid() {
           {s.teacher.split(" ")[0]} · {s.duration}
         </p>
         <div className="mt-auto pt-3">
-          <button className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#DFFF3F] py-1.5 text-[11.5px] font-semibold text-[#0B0B0F]">
+          <ComingSoonButton
+            message="La salle ouvre à H-5"
+            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#DFFF3F] py-1.5 text-[11.5px] font-semibold text-[#0B0B0F]"
+            flashClassName="!bg-[#0B0B0F] !text-[#DFFF3F]"
+          >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#0B0B0F]" />
             Rejoindre
-          </button>
+          </ComingSoonButton>
         </div>
       </div>
 
@@ -498,7 +514,12 @@ function MobileMessages() {
       <div className="rounded-[20px] bg-white p-4 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
         <div className="flex items-center justify-between">
           <h3 className="text-[13px] font-semibold text-[#0B0B0F]">Messages</h3>
-          <button className="text-[10.5px] font-medium text-[#8A8D93]">Boîte de réception</button>
+          <Link
+            href="/student/messages"
+            className="text-[10.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+          >
+            Boîte de réception
+          </Link>
         </div>
         <div className="mt-3 space-y-3">
           {messages.map((m) => (

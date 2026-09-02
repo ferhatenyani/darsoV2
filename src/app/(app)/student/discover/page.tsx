@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Bookmark, Filter, Search, SlidersHorizontal } from "lucide-react";
 import { AppShell } from "@/components/app/app-shell";
@@ -519,10 +520,13 @@ function DesktopMain({
         title="Découvrir"
         subline="Parcours les cours des profs ou réponds aux annonces des élèves — style Upwork."
         actions={
-          <button className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]">
+          <Link
+            href="/student/favorites"
+            className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+          >
             <Bookmark className="h-3.5 w-3.5" strokeWidth={1.75} />
             Favoris
-          </button>
+          </Link>
         }
       />
 

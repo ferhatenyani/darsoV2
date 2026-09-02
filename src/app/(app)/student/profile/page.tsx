@@ -309,10 +309,12 @@ function SectionShell({
   danger?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[20px] bg-white shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
-      {danger ? (
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#DC2626] via-[#DC2626]/70 to-transparent" />
-      ) : null}
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[20px] bg-white shadow-[0_1px_2px_rgba(10,11,20,0.04)]",
+        danger && "ring-1 ring-inset ring-[#DC2626]/25",
+      )}
+    >
       <div className="p-5 sm:p-6">
         <div>
           <h2 className="font-[family-name:var(--font-cabinet)] text-[18px] font-bold tracking-tight text-[#0B0B0F]">
@@ -550,6 +552,12 @@ function SecuritySection() {
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [twoFA, setTwoFA] = useState(false);
+  const [sessions, setSessions] = useState(MOCK_SESSIONS);
+
+  const disconnect = (id: string) =>
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+  const disconnectOthers = () =>
+    setSessions((prev) => prev.filter((s) => s.current));
 
   return (
     <div className="flex flex-col gap-4">
@@ -614,17 +622,20 @@ function SecuritySection() {
         title="Sessions actives"
         subtitle="Les appareils connectés en ce moment à ton compte."
         footer={
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#EFEFF1] bg-white px-3 py-1.5 text-[11.5px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
-          >
-            <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Déconnecter toutes les autres sessions
-          </button>
+          sessions.some((s) => !s.current) ? (
+            <button
+              type="button"
+              onClick={disconnectOthers}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#EFEFF1] bg-white px-3 py-1.5 text-[11.5px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+            >
+              <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Déconnecter toutes les autres sessions
+            </button>
+          ) : null
         }
       >
         <div className="flex flex-col divide-y divide-[#EFEFF1] rounded-[16px] border border-[#EFEFF1]">
-          {MOCK_SESSIONS.map((s) => {
+          {sessions.map((s) => {
             const Icon = s.icon;
             return (
               <div
@@ -646,7 +657,11 @@ function SecuritySection() {
                   </p>
                 </div>
                 {!s.current ? (
-                  <button className="text-[11px] font-semibold text-[#DC2626] hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => disconnect(s.id)}
+                    className="text-[11px] font-semibold text-[#DC2626] transition-colors hover:underline"
+                  >
                     Déconnecter
                   </button>
                 ) : null}

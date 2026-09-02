@@ -1,11 +1,15 @@
+import Link from "next/link";
+
 export function SectionHeader({
   title,
   subtitle,
   action,
+  actionHref,
 }: {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  actionHref?: string;
 }) {
   return (
     <div className="flex items-end justify-between gap-5">
@@ -19,9 +23,18 @@ export function SectionHeader({
       </div>
       {action ? (
         typeof action === "string" ? (
-          <button className="shrink-0 text-[11.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]">
-            {action}
-          </button>
+          actionHref ? (
+            <Link
+              href={actionHref}
+              className="shrink-0 text-[11.5px] font-medium text-[#8A8D93] transition-colors hover:text-[#0B0B0F]"
+            >
+              {action}
+            </Link>
+          ) : (
+            <span className="shrink-0 text-[11.5px] font-medium text-[#8A8D93]">
+              {action}
+            </span>
+          )
         ) : (
           action
         )

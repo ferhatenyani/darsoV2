@@ -294,7 +294,6 @@ function InfoCard() {
   return (
     <div className="flex flex-col gap-2.5">
       <div className="relative overflow-hidden rounded-[20px] bg-white p-5 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
-        <div className="absolute inset-x-0 top-0 h-1 bg-[#DFFF3F]" />
         <div className="grid h-10 w-10 place-items-center rounded-full bg-[#F5F5F7] text-[#0B0B0F]">
           <HeadphonesIcon className="h-5 w-5" strokeWidth={1.75} />
         </div>
@@ -319,7 +318,7 @@ function InfoCard() {
         </ul>
       </div>
 
-      <div className="rounded-[20px] bg-gradient-to-br from-white to-[#F5F5F7] p-4 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
+      <div className="rounded-[20px] border border-[#EFEFF1] bg-white p-4">
         <Eyebrow>Urgence ?</Eyebrow>
         <p className="mt-1.5 text-[12px] leading-snug text-[#6E7178]">
           Pour un incident pendant une séance en cours, appelle-nous directement

@@ -27,7 +27,7 @@ export function MessageBubble({
   const isSent = side === "sent";
 
   const bubbleClass = cn(
-    "max-w-[72%] px-3.5 py-2 text-[13px] leading-[1.35] rounded-[16px] whitespace-pre-wrap break-words",
+    "w-fit max-w-full px-3.5 py-2 text-[13px] leading-[1.35] rounded-[16px] whitespace-pre-wrap [overflow-wrap:anywhere]",
     isSent ? "bg-[#0B0B0F] text-white" : "bg-[#F0F0F2] text-[#0B0B0F]",
     // Tail (last in group)
     showTail && isSent ? "rounded-br-md" : "",
@@ -40,13 +40,13 @@ export function MessageBubble({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={springSoft}
       className={cn(
-        "flex w-full",
+        "flex w-full min-w-0",
         isSent ? "justify-end" : "justify-start",
       )}
     >
       <div
         className={cn(
-          "flex max-w-[80%] flex-col",
+          "inline-flex max-w-[80%] flex-col",
           isSent ? "items-end" : "items-start",
         )}
       >

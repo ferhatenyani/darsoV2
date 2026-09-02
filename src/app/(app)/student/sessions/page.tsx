@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { TabSwitcher } from "@/components/app/tab-switcher";
 import { EmptyState } from "@/components/app/empty-state";
 import { Avatar } from "@/components/app/avatar";
+import { JoinSessionModal } from "@/components/app/join-session-modal";
 import { SessionCard } from "@/components/app/session-card";
 import {
   SessionDetailDrawer,
@@ -29,6 +30,7 @@ import {
 import { studentMobileTabs, studentNav } from "@/lib/nav";
 import { fadeQuick, springTight } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { downloadTextPdf } from "@/lib/download-pdf";
 
 /* ---------------- MOCK: replace when API lands ---------------- */
 
@@ -284,6 +286,9 @@ function SessionsInner() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mobileDetailId, setMobileDetailId] = useState<string | null>(null);
   const [expandedPastId, setExpandedPastId] = useState<string | null>(null);
+  const [joinSessionId, setJoinSessionId] = useState<string | null>(null);
+  const [cancelledIds, setCancelledIds] = useState<Set<string>>(() => new Set());
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Ticks every 30s so pulse timing stays accurate.
   const [now, setNow] = useState<Date>(() => new Date("2026-09-02T14:00:00+01:00"));
@@ -305,6 +310,7 @@ function SessionsInner() {
     const today: MockSession[] = [];
     const past: MockSession[] = [];
     for (const s of sessions) {
+      if (cancelledIds.has(s.id)) continue;
       const d = new Date(s.when);
       if (s.status === "past") {
         past.push(s);
@@ -319,7 +325,7 @@ function SessionsInner() {
     today.sort((a, b) => new Date(a.when).getTime() - new Date(b.when).getTime());
     past.sort((a, b) => new Date(b.when).getTime() - new Date(a.when).getTime());
     return { upcoming, today, past };
-  }, [now]);
+  }, [now, cancelledIds]);
 
   const currentList = filtered[tab];
 
@@ -368,6 +374,55 @@ function SessionsInner() {
     past: filtered.past.length,
   };
 
+  const joinSession = useMemo(
+    () => (joinSessionId ? sessions.find((s) => s.id === joinSessionId) ?? null : null),
+    [joinSessionId],
+  );
+
+  const openJoin = useCallback((id: string) => setJoinSessionId(id), []);
+  const closeJoin = useCallback(() => setJoinSessionId(null), []);
+  const cancelSession = useCallback(
+    (id: string) => {
+      setCancelledIds((prev) => new Set(prev).add(id));
+      setNotice("Séance annulée");
+      window.setTimeout(() => setNotice(null), 2200);
+      setMobileDetailId(null);
+    },
+    [],
+  );
+  const messageTeacher = useCallback(
+    () => {
+      router.push("/student/messages");
+    },
+    [router],
+  );
+  const rescheduleFlash = useCallback(() => {
+    setNotice("Reprogrammation — bientôt via l'app");
+    window.setTimeout(() => setNotice(null), 2200);
+  }, []);
+  const downloadRecap = useCallback((s: SessionDetailData) => {
+    downloadTextPdf(`Darso — Séance ${s.id}`, [
+      `Séance : ${s.title}`,
+      `Matière : ${s.subject}`,
+      `Prof : ${s.teacher.name}`,
+      `Quand : ${s.whenLabel}`,
+      `Durée : ${s.duration}`,
+      "",
+      "Merci d'avoir utilisé Darso.",
+    ]);
+  }, []);
+  const openWaitingRoom = useCallback(() => {
+    const live = sessions.find(
+      (s) => !cancelledIds.has(s.id) && (s.status === "live" || (s.status === "upcoming" && shouldPulse(s))),
+    );
+    if (live) setJoinSessionId(live.id);
+    else {
+      setNotice("Aucune séance dans les 10 min");
+      window.setTimeout(() => setNotice(null), 2200);
+    }
+  }, [cancelledIds, shouldPulse]);
+  const openCalendar = useCallback(() => setTab("upcoming"), []);
+
   const desktop = (
     <DesktopMain
       tab={tab}
@@ -379,6 +434,13 @@ function SessionsInner() {
       pulseFor={shouldPulse}
       expandedPastId={expandedPastId}
       onTogglePast={(id) => setExpandedPastId((v) => (v === id ? null : id))}
+      onJoin={openJoin}
+      onCancel={cancelSession}
+      onMessage={messageTeacher}
+      onReschedule={rescheduleFlash}
+      onOpenWaitingRoom={openWaitingRoom}
+      onOpenCalendar={openCalendar}
+      onDownloadRecap={downloadRecap}
     />
   );
 
@@ -394,21 +456,53 @@ function SessionsInner() {
       onTogglePast={(id) => setExpandedPastId((v) => (v === id ? null : id))}
       mobileDetail={mobileDetail}
       onCloseDetail={() => setMobileDetailId(null)}
+      onJoin={openJoin}
+      onCancel={cancelSession}
+      onMessage={messageTeacher}
+      onReschedule={rescheduleFlash}
     />
   );
 
   return (
-    <AppShell
-      nav={studentNav}
-      mobileTabs={studentMobileTabs}
-      user={student}
-      desktopMain={desktop}
-      mobileHeader={{
-        title: "Mes séances",
-        subtitle: `${counts.today} aujourd'hui · ${counts.upcoming} à venir`,
-      }}
-      mobileChildren={mobile}
-    />
+    <>
+      <AppShell
+        nav={studentNav}
+        mobileTabs={studentMobileTabs}
+        user={student}
+        desktopMain={desktop}
+        mobileHeader={{
+          title: "Mes séances",
+          subtitle: `${counts.today} aujourd'hui · ${counts.upcoming} à venir`,
+        }}
+        mobileChildren={mobile}
+      />
+
+      <JoinSessionModal
+        open={joinSession !== null}
+        onClose={closeJoin}
+        session={
+          joinSession
+            ? {
+                title: joinSession.title,
+                subject: joinSession.subject,
+                teacher: joinSession.teacher,
+                whenLabel: joinSession.whenLabel,
+                duration: joinSession.duration,
+              }
+            : null
+        }
+      />
+
+      {notice ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-[70] -translate-x-1/2 rounded-full bg-[#0B0B0F] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_8px_24px_rgba(10,11,20,0.28)]"
+        >
+          {notice}
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -426,6 +520,13 @@ function DesktopMain({
   pulseFor,
   expandedPastId,
   onTogglePast,
+  onJoin,
+  onCancel,
+  onMessage,
+  onReschedule,
+  onOpenWaitingRoom,
+  onOpenCalendar,
+  onDownloadRecap,
 }: {
   tab: TabKey;
   onTabChange: (t: TabKey) => void;
@@ -436,6 +537,13 @@ function DesktopMain({
   pulseFor: (s: SessionDetailData) => boolean;
   expandedPastId: string | null;
   onTogglePast: (id: string) => void;
+  onJoin: (id: string) => void;
+  onCancel: (id: string) => void;
+  onMessage: (id: string) => void;
+  onReschedule: (id: string) => void;
+  onOpenWaitingRoom: () => void;
+  onOpenCalendar: () => void;
+  onDownloadRecap: (s: SessionDetailData) => void;
 }) {
   return (
     <div className="p-6">
@@ -453,11 +561,19 @@ function DesktopMain({
         subline="Rejoins tes cours en un clic, retrouve tes enregistrements et tes notes."
         actions={
           <>
-            <button className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]">
+            <button
+              type="button"
+              onClick={onOpenCalendar}
+              className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+            >
               <CalendarIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Vue calendrier
+              Vue à venir
             </button>
-            <button className="flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]">
+            <button
+              type="button"
+              onClick={onOpenWaitingRoom}
+              className="flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+            >
               <Video className="h-3.5 w-3.5" strokeWidth={2} />
               Salle d&apos;attente
             </button>
@@ -521,7 +637,21 @@ function DesktopMain({
           <SessionDetailDrawer
             session={selected}
             pulsing={selected ? pulseFor(selected) : false}
+            onJoin={onJoin}
+            onCancel={onCancel}
+            onMessage={onMessage}
+            onReschedule={onReschedule}
           />
+          {selected && selected.status === "past" ? (
+            <button
+              type="button"
+              onClick={() => onDownloadRecap(selected)}
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full border border-[#EFEFF1] bg-white py-2 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+            >
+              <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Télécharger le récap PDF
+            </button>
+          ) : null}
         </aside>
       </div>
     </div>
@@ -738,6 +868,10 @@ function MobileBody({
   onTogglePast,
   mobileDetail,
   onCloseDetail,
+  onJoin,
+  onCancel,
+  onMessage,
+  onReschedule,
 }: {
   tab: TabKey;
   onTabChange: (t: TabKey) => void;
@@ -749,6 +883,10 @@ function MobileBody({
   onTogglePast: (id: string) => void;
   mobileDetail: MockSession | null;
   onCloseDetail: () => void;
+  onJoin: (id: string) => void;
+  onCancel: (id: string) => void;
+  onMessage: (id: string) => void;
+  onReschedule: (id: string) => void;
 }) {
   return (
     <>
@@ -776,6 +914,10 @@ function MobileBody({
               variant="fullscreen"
               onBack={onCloseDetail}
               pulsing={pulseFor(mobileDetail)}
+              onJoin={onJoin}
+              onCancel={onCancel}
+              onMessage={onMessage}
+              onReschedule={onReschedule}
             />
           </motion.div>
         ) : (

@@ -21,7 +21,7 @@ export function PageHeader({
             {eyebrow}
           </div>
         ) : null}
-        <h1 className="mt-1.5 font-[family-name:var(--font-cabinet)] text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-[#0B0B0F]">
+        <h1 className="mt-1.5 font-[family-name:var(--font-cabinet)] text-[26px] sm:text-[32px] md:text-[36px] font-bold leading-[1.05] tracking-[-0.02em] text-[#0B0B0F]">
           {title}
         </h1>
         {subline ? (

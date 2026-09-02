@@ -18,6 +18,9 @@ export type CourseCardProps = {
   nextSlot: string;
   tone: CourseCardTone;
   href?: string;
+  /** If provided, bookmark toggle is controlled externally (used by favorites). */
+  bookmarked?: boolean;
+  onBookmarkToggle?: (next: boolean) => void;
 };
 
 export function CourseCard({
@@ -29,8 +32,16 @@ export function CourseCard({
   price,
   nextSlot,
   href,
+  bookmarked,
+  onBookmarkToggle,
 }: CourseCardProps) {
-  const [saved, setSaved] = useState(false);
+  const [internalSaved, setInternalSaved] = useState(false);
+  const isControlled = bookmarked !== undefined;
+  const saved = isControlled ? bookmarked : internalSaved;
+  const setSaved = (next: boolean) => {
+    if (isControlled) onBookmarkToggle?.(next);
+    else setInternalSaved(next);
+  };
   const Wrapper: React.ElementType = href ? Link : "article";
   const wrapperProps = href
     ? { href, "aria-label": `${subject} — ${title}` }
@@ -57,7 +68,7 @@ export function CourseCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setSaved((v) => !v);
+              setSaved(!saved);
             }}
             aria-label={saved ? "Retirer des favoris" : "Ajouter aux favoris"}
             aria-pressed={saved}

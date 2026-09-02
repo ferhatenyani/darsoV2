@@ -642,35 +642,11 @@ function SessionTile({
         className,
       )}
     >
-      <CourseCard {...session} />
-      {/* Overlay bookmark toggle — sits above the decorative one in CourseCard header */}
-      <motion.button
-        type="button"
-        aria-label={bookmarked ? "Retirer des favoris" : "Ajouter aux favoris"}
-        aria-pressed={bookmarked}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onToggle(session.id, !bookmarked);
-        }}
-        animate={bookmarked ? { scale: [1, 1.15, 1] } : { scale: 1 }}
-        transition={
-          bookmarked
-            ? { duration: 0.35, times: [0, 0.55, 1], ease: "easeOut" }
-            : springSoft
-        }
-        className={cn(
-          "absolute bottom-2.5 right-2.5 grid h-7 w-7 place-items-center rounded-full transition-colors",
-          bookmarked
-            ? "bg-[#0B0B0F] text-[#DFFF3F]"
-            : "bg-white/90 text-[#0B0B0F] hover:bg-white",
-        )}
-      >
-        <Bookmark
-          className={cn("h-3.5 w-3.5", bookmarked && "fill-current")}
-          strokeWidth={1.75}
-        />
-      </motion.button>
+      <CourseCard
+        {...session}
+        bookmarked={bookmarked}
+        onBookmarkToggle={(next) => onToggle(session.id, next)}
+      />
     </div>
   );
 }

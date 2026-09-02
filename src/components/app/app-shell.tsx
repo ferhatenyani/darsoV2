@@ -77,9 +77,20 @@ function DesktopFrame({
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightOpen, setRightOpen] = useState(true);
   const [isTabletBP, setIsTabletBP] = useState(false);
+  const [isRailNarrow, setIsRailNarrow] = useState(false);
+  const [railUserToggled, setRailUserToggled] = useState(false);
 
   useEffect(() => {
-    const compute = () => setIsTabletBP(window.innerWidth < 1180);
+    const compute = () => {
+      const w = window.innerWidth;
+      // Sidebar expanded only once we have enough width for the main content
+      // to still breathe — 1180 was too aggressive and squeezed columns in the
+      // 1180-1280 zone.
+      setIsTabletBP(w < 1280);
+      // Below ~1100px the main column becomes cramped with the 304px rail
+      // eating it. Auto-close unless the user has explicitly toggled it.
+      setIsRailNarrow(w < 1100);
+    };
     compute();
     window.addEventListener("resize", compute);
     return () => window.removeEventListener("resize", compute);
@@ -89,11 +100,24 @@ function DesktopFrame({
     setLeftCollapsed(isTabletBP);
   }, [isTabletBP]);
 
+  useEffect(() => {
+    if (!railUserToggled) setRightOpen(!isRailNarrow);
+  }, [isRailNarrow, railUserToggled]);
+
   const ctxValue: AppShellCtx = {
     railOpen: rightOpen,
-    setRailOpen: setRightOpen,
-    openRail: () => setRightOpen(true),
-    closeRail: () => setRightOpen(false),
+    setRailOpen: (v) => {
+      setRailUserToggled(true);
+      setRightOpen(v);
+    },
+    openRail: () => {
+      setRailUserToggled(true);
+      setRightOpen(true);
+    },
+    closeRail: () => {
+      setRailUserToggled(true);
+      setRightOpen(false);
+    },
   };
 
   return (

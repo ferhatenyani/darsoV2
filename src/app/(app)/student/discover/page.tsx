@@ -620,7 +620,7 @@ function MobileHeaderActions({
     <>
       <button
         aria-label="Recherche"
-        onClick={() => console.log("[Discover] search tapped")}
+        onClick={onOpenFilters}
         className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#0B0B0F] shadow-[0_1px_2px_rgba(10,11,20,0.04)]"
       >
         <Search className="h-[17px] w-[17px]" strokeWidth={1.75} />

@@ -823,7 +823,7 @@ function DesktopMain({
         {stats}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-5 min-[1180px]:grid-cols-[minmax(0,1fr)_minmax(300px,340px)]">
+      <div className="mt-6 grid grid-cols-1 gap-5 min-[1360px]:grid-cols-[minmax(0,1fr)_minmax(300px,340px)]">
         <div>
           <div className="flex items-center justify-between gap-3">
             <TabSwitcher<TabKey>
@@ -938,11 +938,11 @@ function TransactionsTable({
   onRowClick: (r: Transaction) => void;
 }) {
   const columns: DataTableColumn[] = [
-    { key: "date", header: "Date", className: "w-[92px] text-[#6E7178]" },
+    { key: "date", header: "Date", className: "whitespace-nowrap text-[#6E7178]", headerClassName: "w-[74px]" },
     { key: "title", header: "Cours" },
-    { key: "method", header: "Moyen", className: "text-[#6E7178]" },
-    { key: "status", header: "Statut" },
-    { key: "amount", header: "Montant", align: "right", numeric: true },
+    { key: "method", header: "Moyen", className: "whitespace-nowrap text-[#6E7178]" },
+    { key: "status", header: "Statut", className: "whitespace-nowrap", headerClassName: "w-[92px]" },
+    { key: "amount", header: "Montant", align: "right", numeric: true, className: "whitespace-nowrap", headerClassName: "w-[104px]" },
   ];
   const tableRows = rows.map((t) => ({
     id: t.id,
@@ -987,11 +987,11 @@ function InvoicesTable({
   onRowClick: (r: InvoiceRow) => void;
 }) {
   const columns: DataTableColumn[] = [
-    { key: "number", header: "N°", className: "w-[130px] text-[#6E7178]" },
+    { key: "number", header: "N°", className: "whitespace-nowrap w-[110px] text-[#6E7178]" },
     { key: "title", header: "Objet" },
-    { key: "date", header: "Date", className: "text-[#6E7178]", numeric: true },
-    { key: "status", header: "Statut" },
-    { key: "total", header: "Total", align: "right", numeric: true },
+    { key: "date", header: "Date", className: "whitespace-nowrap text-[#6E7178]", numeric: true },
+    { key: "status", header: "Statut", className: "whitespace-nowrap" },
+    { key: "total", header: "Total", align: "right", numeric: true, className: "whitespace-nowrap" },
   ];
   const tableRows = rows.map((r) => ({
     id: r.id,
@@ -1032,11 +1032,11 @@ function RefundsTable({
     );
   }
   const columns: DataTableColumn[] = [
-    { key: "ref", header: "Réf.", className: "w-[110px] text-[#6E7178]" },
+    { key: "ref", header: "Réf.", className: "whitespace-nowrap w-[110px] text-[#6E7178]" },
     { key: "title", header: "Objet" },
-    { key: "date", header: "Demandé le", className: "text-[#6E7178]", numeric: true },
-    { key: "status", header: "Statut" },
-    { key: "amount", header: "Montant", align: "right", numeric: true },
+    { key: "date", header: "Demandé le", className: "whitespace-nowrap text-[#6E7178]", numeric: true },
+    { key: "status", header: "Statut", className: "whitespace-nowrap" },
+    { key: "amount", header: "Montant", align: "right", numeric: true, className: "whitespace-nowrap" },
   ];
   const tableRows = rows.map((r) => ({
     id: r.id,

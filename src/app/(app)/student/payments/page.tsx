@@ -27,10 +27,13 @@ import {
   PaymentMethodRow,
   type PaymentBrand,
 } from "@/components/app/payment-method-row";
+import { AddCardModal, type NewCardPayload } from "@/components/app/add-card-modal";
 import { InvoiceModal, type InvoiceData } from "@/components/app/invoice-modal";
+import { PaymentTopUpModal } from "@/components/app/payment-topup-modal";
 import { RefundRequestModal } from "@/components/app/refund-request-modal";
 import { studentMobileTabs, studentNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import { downloadTextPdf } from "@/lib/download-pdf";
 
 /* ---------------- MOCK: replace when API lands ---------------- */
 
@@ -448,6 +451,17 @@ function PaymentsInner() {
     readOnly?: boolean;
   }>({});
   const [refundOpen, setRefundOpen] = useState(false);
+  const [topUpOpen, setTopUpOpen] = useState(false);
+  const [addCardOpen, setAddCardOpen] = useState(false);
+  const [cards, setCards] = useState<PaymentMethod[]>(paymentMethods);
+  const [balance, setBalance] = useState(340);
+  const [statusFilter, setStatusFilter] = useState<TxStatus | "tous">("tous");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const flash = (msg: string) => {
+    setNotice(msg);
+    window.setTimeout(() => setNotice(null), 2200);
+  };
 
   // URL sync
   useEffect(() => {
@@ -458,7 +472,14 @@ function PaymentsInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  const walletBalance = 340;
+  const walletBalance = balance;
+  const filteredTransactions = useMemo(
+    () =>
+      statusFilter === "tous"
+        ? transactions
+        : transactions.filter((t) => t.status === statusFilter),
+    [statusFilter],
+  );
   const monthSpend = useMemo(
     () =>
       transactions
@@ -578,10 +599,19 @@ function PaymentsInner() {
       tab={tab}
       onTabChange={setTab}
       stats={stats}
+      transactions={filteredTransactions}
+      cards={cards}
       onOpenTx={openTransactionInvoice}
       onOpenInvoice={openInvoice}
       onOpenRefund={openRefundDetail}
       onOpenRefundForm={() => setRefundOpen(true)}
+      onOpenTopUp={() => setTopUpOpen(true)}
+      onOpenAddCard={() => setAddCardOpen(true)}
+      statusFilter={statusFilter}
+      onStatusFilter={setStatusFilter}
+      filterOpen={filterOpen}
+      onToggleFilter={() => setFilterOpen((v) => !v)}
+      onCloseFilter={() => setFilterOpen(false)}
     />
   );
 
@@ -590,10 +620,14 @@ function PaymentsInner() {
       tab={tab}
       onTabChange={setTab}
       stats={stats}
+      transactions={filteredTransactions}
+      cards={cards}
       onOpenTx={openTransactionInvoice}
       onOpenInvoice={openInvoice}
       onOpenRefund={openRefundDetail}
       onOpenRefundForm={() => setRefundOpen(true)}
+      onOpenTopUp={() => setTopUpOpen(true)}
+      onOpenAddCard={() => setAddCardOpen(true)}
     />
   );
 
@@ -618,8 +652,35 @@ function PaymentsInner() {
         title={invoiceMode.title}
         readOnly={invoiceMode.readOnly}
         onDownload={() => {
-          // eslint-disable-next-line no-console
-          console.log("[InvoiceModal] download", invoiceData?.number);
+          if (!invoiceData) return;
+          const total = invoiceData.items.reduce(
+            (s, it) => s + it.qty * it.unit,
+            0,
+          );
+          const tva = total * 0.2;
+          downloadTextPdf(`Darso — ${invoiceData.number}`, [
+            `DARSO — Facture ${invoiceData.number}`,
+            `Émise le : ${invoiceData.issuedAt}`,
+            `Statut : ${invoiceData.status}`,
+            "",
+            "Facturé à :",
+            invoiceData.billTo.name,
+            ...(invoiceData.billTo.address?.split("\n") ?? []),
+            invoiceData.billTo.email ?? "",
+            "",
+            "Détail :",
+            ...invoiceData.items.map(
+              (it) =>
+                `- ${it.label} x${it.qty}  ${(it.qty * it.unit).toFixed(2)} MAD`,
+            ),
+            "",
+            `Sous-total HT : ${total.toFixed(2)} MAD`,
+            `TVA 20% : ${tva.toFixed(2)} MAD`,
+            `Total TTC : ${(total + tva).toFixed(2)} MAD`,
+            "",
+            invoiceData.footer ?? "Merci pour votre confiance.",
+          ]);
+          flash("PDF téléchargé");
         }}
       />
       <RefundRequestModal
@@ -632,6 +693,46 @@ function PaymentsInner() {
             label: `${t.id} · ${t.title} — ${t.amount.toLocaleString("fr-FR")} MAD`,
           }))}
       />
+      <PaymentTopUpModal
+        open={topUpOpen}
+        onClose={() => setTopUpOpen(false)}
+        currentBalance={balance}
+        methods={cards.map((c) => ({
+          id: c.id,
+          label: `${c.brand.toUpperCase()} •• ${c.last4} — ${c.holder}`,
+        }))}
+        onConfirm={(amount) => {
+          setBalance((b) => b + amount);
+          flash(`${amount} MAD ajoutés au portefeuille`);
+        }}
+      />
+      <AddCardModal
+        open={addCardOpen}
+        onClose={() => setAddCardOpen(false)}
+        onAdd={(c: NewCardPayload) => {
+          setCards((prev) => [
+            ...prev,
+            {
+              id: `pm-${prev.length + 1}`,
+              brand: (c.brand === "amex" ? "visa" : c.brand) as PaymentBrand,
+              last4: c.last4,
+              expiry: c.expiry,
+              holder: c.holder.toUpperCase(),
+            },
+          ]);
+          flash("Carte ajoutée");
+        }}
+      />
+
+      {notice ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-[70] -translate-x-1/2 rounded-full bg-[#0B0B0F] px-4 py-2 text-[12px] font-semibold text-white shadow-[0_8px_24px_rgba(10,11,20,0.28)]"
+        >
+          {notice}
+        </div>
+      ) : null}
     </>
   );
 }
@@ -651,18 +752,36 @@ function DesktopMain({
   tab,
   onTabChange,
   stats,
+  transactions: txRows,
+  cards,
   onOpenTx,
   onOpenInvoice,
   onOpenRefund,
   onOpenRefundForm,
+  onOpenTopUp,
+  onOpenAddCard,
+  statusFilter,
+  onStatusFilter,
+  filterOpen,
+  onToggleFilter,
+  onCloseFilter,
 }: {
   tab: TabKey;
   onTabChange: (t: TabKey) => void;
   stats: React.ReactNode;
+  transactions: Transaction[];
+  cards: PaymentMethod[];
   onOpenTx: (tx: Transaction) => void;
   onOpenInvoice: (r: InvoiceRow) => void;
   onOpenRefund: (r: Refund) => void;
   onOpenRefundForm: () => void;
+  onOpenTopUp: () => void;
+  onOpenAddCard: () => void;
+  statusFilter: TxStatus | "tous";
+  onStatusFilter: (s: TxStatus | "tous") => void;
+  filterOpen: boolean;
+  onToggleFilter: () => void;
+  onCloseFilter: () => void;
 }) {
   return (
     <div className="p-6">
@@ -680,11 +799,19 @@ function DesktopMain({
         subline="Gère tes moyens de paiement, retrouve tes reçus et demande un remboursement en 2 clics."
         actions={
           <>
-            <button className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]">
+            <button
+              type="button"
+              onClick={onOpenTopUp}
+              className="flex h-9 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3.5 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+            >
               <Wallet className="h-3.5 w-3.5" strokeWidth={1.75} />
               Recharger
             </button>
-            <button className="flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]">
+            <button
+              type="button"
+              onClick={onOpenAddCard}
+              className="flex h-9 items-center gap-1.5 rounded-full bg-[#0B0B0F] px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+            >
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
               Ajouter une carte
             </button>
@@ -713,16 +840,21 @@ function DesktopMain({
                 Demander un remboursement
               </button>
             ) : (
-              <button className="flex h-8 items-center gap-1.5 rounded-full border border-[#EFEFF1] px-3 text-[11.5px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]">
-                <Filter className="h-3 w-3" strokeWidth={1.75} />
-                Filtrer
-              </button>
+              <StatusFilterButton
+                open={filterOpen}
+                value={statusFilter}
+                onToggle={onToggleFilter}
+                onSelect={(v) => {
+                  onStatusFilter(v);
+                  onCloseFilter();
+                }}
+              />
             )}
           </div>
 
           <div className="mt-4">
             {tab === "transactions" ? (
-              <TransactionsTable rows={transactions} onRowClick={onOpenTx} />
+              <TransactionsTable rows={txRows} onRowClick={onOpenTx} />
             ) : tab === "invoices" ? (
               <InvoicesTable rows={invoices} onRowClick={onOpenInvoice} />
             ) : (
@@ -734,10 +866,10 @@ function DesktopMain({
         <aside className="space-y-3">
           <SectionHeader
             title="Moyens de paiement"
-            subtitle={`${paymentMethods.length} carte${paymentMethods.length > 1 ? "s" : ""} enregistrée${paymentMethods.length > 1 ? "s" : ""}`}
+            subtitle={`${cards.length} carte${cards.length > 1 ? "s" : ""} enregistrée${cards.length > 1 ? "s" : ""}`}
           />
           <div className="space-y-2">
-            {paymentMethods.map((pm) => (
+            {cards.map((pm) => (
               <PaymentMethodRow
                 key={pm.id}
                 brand={pm.brand}
@@ -747,7 +879,7 @@ function DesktopMain({
                 isDefault={pm.isDefault}
               />
             ))}
-            <PaymentMethodRow variant="add" />
+            <PaymentMethodRow variant="add" onClick={onOpenAddCard} />
           </div>
 
           <div className="mt-4 rounded-[14px] border border-[#EFEFF1] bg-[#FAFAFB] p-3.5">
@@ -943,22 +1075,39 @@ function MobileBody({
   tab,
   onTabChange,
   stats,
+  transactions: txRows,
+  cards,
   onOpenTx,
   onOpenInvoice,
   onOpenRefund,
   onOpenRefundForm,
+  onOpenTopUp,
+  onOpenAddCard,
 }: {
   tab: TabKey;
   onTabChange: (t: TabKey) => void;
   stats: React.ReactNode;
+  transactions: Transaction[];
+  cards: PaymentMethod[];
   onOpenTx: (tx: Transaction) => void;
   onOpenInvoice: (r: InvoiceRow) => void;
   onOpenRefund: (r: Refund) => void;
   onOpenRefundForm: () => void;
+  onOpenTopUp: () => void;
+  onOpenAddCard: () => void;
 }) {
   const [methodsOpen, setMethodsOpen] = useState(false);
   const [period, setPeriod] = useState<"tous" | "7j" | "30j">("tous");
-  const [typeFilter, setTypeFilter] = useState<"tous" | "payés" | "attente" | "échoués">("tous");
+  const [typeFilter, setTypeFilter] = useState<"tous" | "payé" | "en attente" | "échoué">("tous");
+  const visibleTxRows = useMemo(() => {
+    let list = txRows;
+    if (typeFilter !== "tous") list = list.filter((t) => t.status === typeFilter);
+    if (period !== "tous") {
+      const cutoff = Date.now() - (period === "7j" ? 7 : 30) * 86400_000;
+      list = list.filter((t) => new Date(t.date).getTime() >= cutoff);
+    }
+    return list;
+  }, [txRows, typeFilter, period]);
 
   return (
     <div className="mt-2">
@@ -1005,13 +1154,13 @@ function MobileBody({
           </Chip>
         ))}
         {tab === "transactions"
-          ? (["tous", "payés", "attente", "échoués"] as const).map((t) => (
+          ? (["tous", "payé", "en attente", "échoué"] as const).map((t) => (
               <Chip key={t} active={typeFilter === t} onClick={() => setTypeFilter(t)}>
                 {t === "tous"
                   ? "Tous statuts"
-                  : t === "payés"
+                  : t === "payé"
                     ? "Payés"
-                    : t === "attente"
+                    : t === "en attente"
                       ? "En attente"
                       : "Échoués"}
               </Chip>
@@ -1022,7 +1171,15 @@ function MobileBody({
       {/* Stacked list */}
       <div className="mt-3 space-y-2 px-4">
         {tab === "transactions"
-          ? transactions.map((t) => (
+          ? visibleTxRows.length === 0
+            ? (
+              <EmptyState
+                icon={CheckCircle2}
+                title="Aucune transaction"
+                body="Ajuste les filtres pour voir plus de résultats."
+              />
+            )
+            : visibleTxRows.map((t) => (
               <MobileTxRow key={t.id} tx={t} onClick={() => onOpenTx(t)} />
             ))
           : tab === "invoices"
@@ -1053,7 +1210,7 @@ function MobileBody({
               Moyens de paiement
             </p>
             <p className="mt-0.5 text-[12.5px] font-semibold text-[#0B0B0F]">
-              {paymentMethods.length} carte{paymentMethods.length > 1 ? "s" : ""} enregistrée{paymentMethods.length > 1 ? "s" : ""}
+              {cards.length} carte{cards.length > 1 ? "s" : ""} enregistrée{cards.length > 1 ? "s" : ""}
             </p>
           </div>
           <ChevronRight
@@ -1066,7 +1223,7 @@ function MobileBody({
         </button>
         {methodsOpen ? (
           <div className="mt-2 space-y-2">
-            {paymentMethods.map((pm) => (
+            {cards.map((pm) => (
               <PaymentMethodRow
                 key={pm.id}
                 brand={pm.brand}
@@ -1076,9 +1233,29 @@ function MobileBody({
                 isDefault={pm.isDefault}
               />
             ))}
-            <PaymentMethodRow variant="add" />
+            <PaymentMethodRow variant="add" onClick={onOpenAddCard} />
           </div>
         ) : null}
+      </div>
+
+      {/* Mobile top-level actions */}
+      <div className="mt-4 flex gap-2 px-4">
+        <button
+          type="button"
+          onClick={onOpenTopUp}
+          className="flex flex-1 h-10 items-center justify-center gap-1.5 rounded-full border border-[#EFEFF1] bg-white text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+        >
+          <Wallet className="h-3.5 w-3.5" strokeWidth={1.75} />
+          Recharger
+        </button>
+        <button
+          type="button"
+          onClick={onOpenAddCard}
+          className="flex flex-1 h-10 items-center justify-center gap-1.5 rounded-full bg-[#0B0B0F] text-[12px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
+        >
+          <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+          Ajouter une carte
+        </button>
       </div>
       <div className="h-6" />
     </div>
@@ -1245,6 +1422,77 @@ function MobileRefundRow({
         <StatusPill status={refund.status} />
       </div>
       <ArrowUpRight className="h-4 w-4 shrink-0 text-[#8A8D93]" strokeWidth={1.75} />
+    </div>
+  );
+}
+
+function StatusFilterButton({
+  open,
+  value,
+  onToggle,
+  onSelect,
+}: {
+  open: boolean;
+  value: TxStatus | "tous";
+  onToggle: () => void;
+  onSelect: (v: TxStatus | "tous") => void;
+}) {
+  const options: { key: TxStatus | "tous"; label: string }[] = [
+    { key: "tous", label: "Tous" },
+    { key: "payé", label: "Payés" },
+    { key: "en attente", label: "En attente" },
+    { key: "échoué", label: "Échoués" },
+    { key: "remboursé", label: "Remboursés" },
+  ];
+  const label =
+    value === "tous"
+      ? "Filtrer"
+      : `Filtrer · ${options.find((o) => o.key === value)?.label}`;
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className={cn(
+          "flex h-8 items-center gap-1.5 rounded-full border px-3 text-[11.5px] font-semibold transition-colors",
+          value !== "tous"
+            ? "border-[#0B0B0F] bg-[#0B0B0F] text-white"
+            : "border-[#EFEFF1] bg-white text-[#0B0B0F] hover:bg-[#F5F5F7]",
+        )}
+      >
+        <Filter className="h-3 w-3" strokeWidth={1.75} />
+        {label}
+      </button>
+      {open ? (
+        <>
+          <div
+            aria-hidden
+            onClick={onToggle}
+            className="fixed inset-0 z-30"
+          />
+          <div className="absolute right-0 top-9 z-40 min-w-[200px] rounded-[14px] border border-[#EFEFF1] bg-white p-1.5 shadow-[0_8px_24px_rgba(10,11,20,0.12)]">
+            {options.map((o) => (
+              <button
+                key={o.key}
+                type="button"
+                onClick={() => onSelect(o.key)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-[10px] px-2.5 py-1.5 text-left text-[12px] transition-colors hover:bg-[#F5F5F7]",
+                  value === o.key
+                    ? "font-semibold text-[#0B0B0F]"
+                    : "text-[#4A4D54]",
+                )}
+              >
+                {o.label}
+                {value === o.key ? (
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#0B0B0F]" />
+                ) : null}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

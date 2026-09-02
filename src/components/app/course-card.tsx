@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Bookmark, Star } from "lucide-react";
 import { Avatar } from "./avatar";
 import { cn } from "@/lib/utils";
@@ -23,31 +26,42 @@ export function CourseCard({
   sessionsGiven,
   price,
   nextSlot,
-  tone,
 }: CourseCardProps) {
-  const toneBg = {
-    lime: "bg-[#DFFF3F]",
-    "soft-blue": "bg-[#C4CFFF]",
-    cream: "bg-[#F0EDE4]",
-  }[tone];
+  const [saved, setSaved] = useState(false);
   return (
     <article className="flex flex-col overflow-hidden rounded-[16px] border border-[#EFEFF1] bg-white transition-shadow hover:shadow-[0_4px_16px_rgba(10,11,20,0.06)]">
-      <div className={cn("relative h-20", toneBg)}>
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2 py-0.5 text-[10.5px] font-semibold text-[#0B0B0F]">
+      <div className="flex items-start justify-between gap-2 px-3.5 pt-3">
+        <span className="inline-flex items-center rounded-full border border-[#EFEFF1] bg-white px-2 py-0.5 text-[10.5px] font-semibold text-[#0B0B0F]">
           {subject}
         </span>
-        <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-[#0B0B0F] px-1.5 py-0.5 text-[10.5px] font-semibold text-white">
-          <Star className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
-          {rating.toFixed(1)}
-        </span>
-        <button
-          aria-label="Bookmark"
-          className="absolute bottom-2.5 right-2.5 grid h-7 w-7 place-items-center rounded-full bg-white/90 text-[#0B0B0F]"
-        >
-          <Bookmark className="h-3.5 w-3.5" strokeWidth={1.75} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#0B0B0F] px-1.5 py-0.5 text-[10.5px] font-semibold text-white">
+            <Star className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
+            {rating.toFixed(1)}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSaved((v) => !v);
+            }}
+            aria-label={saved ? "Retirer des favoris" : "Ajouter aux favoris"}
+            aria-pressed={saved}
+            className={cn(
+              "grid h-7 w-7 place-items-center rounded-full text-[#0B0B0F] transition-colors",
+              saved ? "bg-[#DFFF3F]" : "bg-[#F5F5F7] hover:bg-[#EFEFF1]",
+            )}
+          >
+            <Bookmark
+              className="h-3.5 w-3.5"
+              strokeWidth={1.75}
+              fill={saved ? "currentColor" : "none"}
+            />
+          </button>
+        </div>
       </div>
-      <div className="flex flex-1 flex-col p-3.5">
+      <div className="flex flex-1 flex-col p-3.5 pt-2.5">
         <h3 className="text-[13px] font-semibold leading-snug text-[#0B0B0F]">{title}</h3>
         <div className="mt-1.5 flex items-center gap-1.5">
           <Avatar initials={teacher.initials} tone="neutral" size={18} />

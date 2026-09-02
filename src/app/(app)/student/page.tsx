@@ -393,11 +393,7 @@ function HeroGrid() {
   return (
     <div className="mt-3 grid grid-cols-2 gap-2 px-4">
       <div className="relative flex flex-col overflow-hidden rounded-[18px] bg-[#0B0B0F] p-3.5 text-white shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
-        <span
-          className="absolute left-3.5 top-3.5 h-1.5 w-6 rounded-full"
-          style={{ backgroundColor: s.dot }}
-        />
-        <p className="mt-4 text-[9.5px] font-semibold uppercase tracking-[0.09em] text-white/50">
+        <p className="text-[9.5px] font-semibold uppercase tracking-[0.09em] text-white/50">
           Prochaine · dans {nextSessionIn}
         </p>
         <p className="mt-1 font-[family-name:var(--font-cabinet)] text-[16px] font-bold leading-[1.15] tracking-tight text-white line-clamp-2">

@@ -131,12 +131,6 @@ function AgencyCard({
 }: CardProps) {
   return (
     <div className="relative w-full max-w-[560px] overflow-hidden rounded-[20px] bg-white p-8 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
-      {/* Lime accent stripe */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-1 bg-[#DFFF3F]"
-      />
-
       {/* Hero */}
       <div className="flex flex-col items-center gap-4 pt-2 text-center">
         <div className="relative grid h-14 w-14 place-items-center rounded-2xl bg-[#0B0B0F] text-[#DFFF3F] shadow-[0_1px_2px_rgba(10,11,20,0.08)]">

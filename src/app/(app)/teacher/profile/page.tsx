@@ -277,10 +277,12 @@ function SectionShell({
   danger?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[20px] bg-white shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
-      {danger ? (
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#DC2626] via-[#DC2626]/70 to-transparent" />
-      ) : null}
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[20px] bg-white shadow-[0_1px_2px_rgba(10,11,20,0.04)]",
+        danger && "ring-1 ring-inset ring-[#DC2626]/25",
+      )}
+    >
       <div className="p-5 sm:p-6">
         <div>
           <h2 className="font-[family-name:var(--font-cabinet)] text-[18px] font-bold tracking-tight text-[#0B0B0F]">
@@ -945,9 +947,6 @@ function PublicPreviewSection({ publicHref }: { publicHref: string }) {
       subtitle="Aperçu de ce que voient les élèves qui te découvrent."
     >
       <div className="relative overflow-hidden rounded-[20px] border border-[#EFEFF1] bg-white">
-        {/* Lime accent stripe */}
-        <div className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-[#DFFF3F] via-[#DFFF3F]/70 to-transparent" />
-
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[#0B0B0F] font-[family-name:var(--font-cabinet)] text-[24px] font-bold text-[#DFFF3F]">

@@ -248,13 +248,7 @@ function NextSessionCard({ s }: { s: SessionShape }) {
   return (
     <div className="relative flex flex-col overflow-hidden rounded-[20px] border border-[#EFEFF1] bg-white p-5 shadow-[0_1px_2px_rgba(10,11,20,0.04)]">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span
-            className="inline-block h-1.5 w-8 rounded-full"
-            style={{ backgroundColor: s.dot }}
-          />
-          <Eyebrow>Prochaine séance · {s.when}</Eyebrow>
-        </div>
+        <Eyebrow>Prochaine séance · {s.when}</Eyebrow>
         <span className="rounded-full bg-[#DFFF3F] px-1.5 py-0.5 text-[10px] font-semibold text-[#0B0B0F]">
           en direct dans 12 min
         </span>
@@ -530,11 +524,7 @@ function MobileHero({
   return (
     <div className="mt-3 px-4">
       <div className="relative flex flex-col overflow-hidden rounded-[18px] bg-[#0B0B0F] p-4 text-white">
-        <span
-          className="absolute left-4 top-4 h-1.5 w-6 rounded-full"
-          style={{ backgroundColor: s.dot }}
-        />
-        <p className="mt-4 text-[9.5px] font-semibold uppercase tracking-[0.09em] text-white/50">
+        <p className="text-[9.5px] font-semibold uppercase tracking-[0.09em] text-white/50">
           Prochaine séance · {s.when}
         </p>
         <p className="mt-1 font-[family-name:var(--font-cabinet)] text-[18px] font-bold leading-[1.15] tracking-tight line-clamp-2">

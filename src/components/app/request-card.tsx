@@ -1,5 +1,4 @@
 import { CalendarClock, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export type RequestCardProps = {
   id: string;
@@ -32,12 +31,7 @@ export function RequestCard({
   onApply,
 }: RequestCardProps) {
   return (
-    <article
-      className={cn(
-        "flex h-full flex-col rounded-[16px] border border-[#EFEFF1] bg-white p-4 transition-shadow hover:shadow-[0_4px_16px_rgba(10,11,20,0.06)]",
-        ownPost && "border-l-2 border-l-[#DFFF3F]",
-      )}
-    >
+    <article className="flex h-full flex-col rounded-[16px] border border-[#EFEFF1] bg-white p-4 transition-shadow hover:shadow-[0_4px_16px_rgba(10,11,20,0.06)]">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.09em] text-[#8A8D93]">
           {subject} · {level}

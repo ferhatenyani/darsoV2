@@ -44,7 +44,7 @@ export const studentNav: NavConfig = [
   {
     label: "Apprendre",
     items: [
-      { icon: Home, label: "Accueil", href: "/student", active: true },
+      { icon: Home, label: "Accueil", href: "/student" },
       { icon: Search, label: "Découvrir", href: "/student/discover" },
       { icon: Bookmark, label: "Favoris", href: "/student/favorites" },
       { icon: Calendar, label: "Mes séances", href: "/student/sessions" },
@@ -64,7 +64,7 @@ export const studentNav: NavConfig = [
 ];
 
 export const studentMobileTabs: TabConfig[] = [
-  { icon: Home, label: "Accueil", href: "/student", active: true },
+  { icon: Home, label: "Accueil", href: "/student" },
   { icon: GraduationCap, label: "Découvrir", href: "/student/discover" },
   { icon: Calendar, label: "Séances", href: "/student/sessions" },
   { icon: MessageCircle, label: "Messages", href: "/student/messages", badge: 2 },
@@ -75,7 +75,7 @@ export const teacherNav: NavConfig = [
   {
     label: "Enseigner",
     items: [
-      { icon: Home, label: "Tableau de bord", href: "/teacher", active: true },
+      { icon: Home, label: "Tableau de bord", href: "/teacher" },
       { icon: Search, label: "Découvrir", href: "/teacher/discover" },
       { icon: CalendarClock, label: "Séances", href: "/teacher/sessions" },
       { icon: Wallet, label: "Revenus", href: "/teacher/earnings" },
@@ -96,7 +96,7 @@ export const teacherNav: NavConfig = [
 ];
 
 export const teacherMobileTabs: TabConfig[] = [
-  { icon: Home, label: "Accueil", href: "/teacher", active: true },
+  { icon: Home, label: "Accueil", href: "/teacher" },
   { icon: Search, label: "Découvrir", href: "/teacher/discover" },
   { icon: CalendarClock, label: "Séances", href: "/teacher/sessions" },
   { icon: MessageCircle, label: "Messages", href: "/teacher/messages" },

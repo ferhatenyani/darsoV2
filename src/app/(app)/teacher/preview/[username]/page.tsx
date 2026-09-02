@@ -58,20 +58,20 @@ export default function TeacherPublicPreviewPage({
             </div>
           </div>
           <div className="flex w-full shrink-0 flex-col gap-2 md:w-auto">
-            <button
-              type="button"
+            <Link
+              href="/sign-up"
               className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#0B0B0F] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#1a1b21]"
             >
               <Calendar className="h-3.5 w-3.5" strokeWidth={2} />
               Réserver
-            </button>
-            <button
-              type="button"
+            </Link>
+            <Link
+              href="/sign-in"
               className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[#EFEFF1] px-4 py-2.5 text-[12.5px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
             >
               <MessageCircle className="h-3.5 w-3.5" strokeWidth={2} />
               Contacter
-            </button>
+            </Link>
           </div>
         </section>
 

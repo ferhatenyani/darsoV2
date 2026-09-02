@@ -42,3 +42,6 @@ next-env.d.ts
 
 # screenshots
 /screenshots/
+.devlog
+audit-report.json
+audit-report.md

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUpRight,
@@ -415,13 +415,8 @@ function DesktopMain({
             {mockPayoutMethods.map((m) => (
               <PayoutMethodCard key={m.id} method={m} />
             ))}
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#D5D7DB] bg-white px-3.5 py-3 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:border-[#0B0B0F] hover:bg-[#F5F5F7]"
-            >
-              <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-              Ajouter un IBAN
-            </button>
+            <AddPayoutMethodButton />
+
           </div>
         </section>
 
@@ -738,13 +733,101 @@ function PayoutMethodCard({
           {method.bankName} · {method.holder}
         </p>
       </div>
+      <ManagePayoutMethodButton isDefault={!!method.isDefault} />
+    </div>
+  );
+}
+
+function ManagePayoutMethodButton({ isDefault }: { isDefault: boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative">
       <button
         type="button"
+        onClick={() => setOpen((v) => !v)}
         className="rounded-full border border-[#EFEFF1] px-2.5 py-1 text-[10.5px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
       >
         Gérer
       </button>
+      {open ? (
+        <div
+          ref={ref}
+          className="absolute right-0 top-8 z-40 w-40 overflow-hidden rounded-[12px] bg-white p-1 shadow-[0_10px_30px_rgba(11,11,15,0.14)] ring-1 ring-[#EFEFF1]"
+        >
+          {!isDefault ? (
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="block w-full rounded-[8px] px-2.5 py-1.5 text-left text-[12px] font-medium text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+            >
+              Rendre par défaut
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="block w-full rounded-[8px] px-2.5 py-1.5 text-left text-[12px] font-medium text-[#0B0B0F] transition-colors hover:bg-[#F5F5F7]"
+          >
+            Modifier
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="block w-full rounded-[8px] px-2.5 py-1.5 text-left text-[12px] font-medium text-[#8A8D93] transition-colors hover:bg-[#F5F5F7] hover:text-[#0B0B0F]"
+          >
+            Supprimer
+          </button>
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function AddPayoutMethodButton() {
+  const [pinged, setPinged] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setPinged(true);
+        window.setTimeout(() => setPinged(false), 1600);
+      }}
+      className={cn(
+        "flex w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#D5D7DB] bg-white px-3.5 py-3 text-[12px] font-semibold text-[#0B0B0F] transition-colors hover:border-[#0B0B0F] hover:bg-[#F5F5F7]",
+        pinged && "border-[#0B0B0F] bg-[#F5F5F7]",
+      )}
+    >
+      {pinged ? (
+        <>
+          <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
+          Bientôt disponible
+        </>
+      ) : (
+        <>
+          <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+          Ajouter un IBAN
+        </>
+      )}
+    </button>
   );
 }
 
@@ -893,13 +976,8 @@ function MobileBody({
             {mockPayoutMethods.map((m) => (
               <PayoutMethodCard key={m.id} method={m} />
             ))}
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#D5D7DB] bg-white px-3.5 py-3 text-[12px] font-semibold text-[#0B0B0F]"
-            >
-              <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-              Ajouter un IBAN
-            </button>
+            <AddPayoutMethodButton />
+
           </div>
         ) : null}
       </div>
